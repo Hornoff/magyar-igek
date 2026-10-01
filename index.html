@@ -274,7 +274,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
     return el;
   }
   const speakBtn = text => h('button', { class: 'speak', type: 'button', onclick: () => speak(text), 'aria-label': 'Прослушать: ' + text }, '🔊 Прослушать');
-  const render = (...nodes) => { app.replaceChildren(...nodes); window.scrollTo(0, 0); };
+  const render = (...nodes) => { app.replaceChildren(...nodes.flat().filter(n => n != null && n !== false)); window.scrollTo(0, 0); };
 
   // ---------- home ----------
   function home() {
