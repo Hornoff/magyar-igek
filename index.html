@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Magyar igék">
+<meta name="theme-color" content="#2c6a4e">
+<title>Magyar igék</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Onest:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one narrow column like a deck of cards on a desk; Hungarian words set in the serif, Russian in the sans. */
+:root {
+  --bg: #f3f4ef;
+  --surface: #ffffff;
+  --sunk: #e9ebe4;
+  --ink: #1c231f;
+  --muted: #5d6962;
+  --line: #d6dad1;
+  --accent: #2c6a4e;
+  --accent-ink: #ffffff;
+  --paprika: #b8432a;
+  --ok: #2e7a4d;
+  --ok-soft: #dcefe2;
+  --bad: #b23a2a;
+  --bad-soft: #f6dfd9;
+  --hu: "Young Serif", Georgia, "Times New Roman", serif;
+  --ru: "Onest", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121614; --surface: #1b211e; --sunk: #232a26; --ink: #e6ebe7; --muted: #9ba79f;
+    --line: #2f3833; --accent: #6dbb91; --accent-ink: #0f1a14; --paprika: #e3785e;
+    --ok: #7fcf9c; --ok-soft: #1f3a2a; --bad: #ef8a76; --bad-soft: #43231d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121614; --surface: #1b211e; --sunk: #232a26; --ink: #e6ebe7; --muted: #9ba79f;
+  --line: #2f3833; --accent: #6dbb91; --accent-ink: #0f1a14; --paprika: #e3785e;
+  --ok: #7fcf9c; --ok-soft: #1f3a2a; --bad: #ef8a76; --bad-soft: #43231d;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--bg); }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.5 var(--ru);
+  padding-inline: 16px;
+  padding-block: 20px 40px;
+}
+main { max-width: 560px; margin: 0 auto; display: grid; gap: 20px; }
+h1, h2 { margin: 0; text-wrap: balance; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hu { font-family: var(--hu); font-weight: 400; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+
+/* Header */
+.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand h1 { font-family: var(--hu); font-size: 34px; line-height: 1.1; }
+.brand p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.stat { text-align: right; font-variant-numeric: tabular-nums; }
+.stat b { font-size: 22px; color: var(--accent); }
+.bar { height: 6px; background: var(--sunk); border-radius: 99px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .3s; }
+
+/* Groups */
+.groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.group {
+  display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: center;
+  text-align: left; padding: 12px; border: 1.5px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); min-width: 0;
+}
+.group[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.glyph {
+  grid-row: span 2; width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
+  background: var(--sunk); font-size: 20px; color: var(--muted);
+}
+.group[aria-pressed="true"] .glyph { background: var(--accent); color: var(--accent-ink); }
+.group .name { font-family: var(--hu); font-size: 18px; line-height: 1.2; }
+.group .meta { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.group .bar { grid-column: 1 / -1; margin-top: 8px; height: 4px; }
+.row-links { display: flex; gap: 14px; flex-wrap: wrap; }
+.link { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; font-size: 14px; }
+
+/* Modes */
+.modes { display: grid; gap: 8px; }
+.mode {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px;
+  padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface); text-align: left;
+}
+.mode:hover { border-color: var(--accent); }
+.mode:disabled { opacity: .45; cursor: not-allowed; }
+.mode .t { font-weight: 600; }
+.mode .s { font-size: 13px; color: var(--muted); }
+.mode .go { color: var(--accent); font-size: 20px; }
+.mode.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.mode.primary .s, .mode.primary .go { color: var(--accent-ink); opacity: .85; }
+
+.settings { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 14px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 6px 12px; font-variant-numeric: tabular-nums; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+/* Session */
+.session-head { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
+.back { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 6px 12px; }
+.count { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 14px; }
+.card {
+  background: var(--surface); border-radius: 20px; border: 1px solid var(--line);
+  padding: 28px 20px; display: grid; gap: 14px; justify-items: center; text-align: center; min-height: 240px;
+  align-content: center;
+}
+.card .front.hu { font-size: clamp(30px, 8vw, 42px); line-height: 1.15; overflow-wrap: anywhere; }
+.card .front.ru { font-size: clamp(22px, 6vw, 28px); font-weight: 600; line-height: 1.25; }
+.card .front.prompt { font-size: clamp(21px, 5.5vw, 26px); }
+.card .back.hu { font-size: clamp(28px, 7vw, 38px); }
+.card .back.ru { font-size: 20px; color: var(--muted); }
+.card hr { width: 60%; border: 0; border-top: 1px dashed var(--line); margin: 4px 0; }
+.example { display: grid; gap: 2px; max-width: 46ch; }
+.example .hu { font-size: 18px; }
+.gap { display: inline-block; min-width: 2.4em; border-bottom: 2px solid var(--paprika); color: var(--paprika); }
+.speak {
+  border: 1px solid var(--line); background: var(--sunk); border-radius: 99px; padding: 6px 14px;
+  font-size: 14px; display: inline-flex; gap: 6px; align-items: center;
+}
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn { border: 0; border-radius: var(--radius); padding: 15px; font-weight: 600; font-size: 16px; }
+.btn.main { background: var(--accent); color: var(--accent-ink); grid-column: 1 / -1; }
+.btn.no { background: var(--bad-soft); color: var(--bad); }
+.btn.yes { background: var(--ok-soft); color: var(--ok); }
+.options { display: grid; gap: 8px; }
+.opt {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px; text-align: left;
+  padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface);
+  font-size: 17px; min-width: 0;
+}
+.opt.hu { font-family: var(--hu); font-size: 19px; }
+.opt span { min-width: 0; overflow-wrap: anywhere; }
+.opt.right { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.opt.wrong { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+.opt:disabled { cursor: default; }
+.solution { background: var(--sunk); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 4px; }
+.solution .hu { font-size: 19px; }
+
+/* Summary & list */
+.summary { display: grid; gap: 14px; justify-items: center; text-align: center; padding: 20px 0; }
+.score { font-family: var(--hu); font-size: 54px; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.review { width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+.review ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.search { width: 100%; padding: 12px 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; }
+.verbs { list-style: none; margin: 0; padding: 0; display: grid; }
+.verbs li { display: grid; grid-template-columns: 14px 1fr; gap: 4px 12px; padding: 12px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.verbs .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 8px; border: 2px solid var(--line); }
+.verbs .dot.seen { border-color: var(--paprika); background: var(--paprika); }
+.verbs .dot.learned { border-color: var(--ok); background: var(--ok); }
+.verbs .w { font-family: var(--hu); font-size: 19px; }
+.verbs .ex { grid-column: 2; font-size: 13px; color: var(--muted); }
+.verbs .ex i { color: var(--ink); font-style: normal; font-family: var(--hu); }
+.note { font-size: 12px; color: var(--muted); text-align: center; }
+.confirm { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+.confirm button { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 6px 12px; }
+.confirm .danger { border-color: var(--bad); color: var(--bad); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+
+<script type="application/json" id="course-data">{"source":"magyarul.online — «Венгерские глаголы» (Тимеа Товишпатаки), вебинары 1–6","groups":[{"id":"top100","title":"100 частых","subtitle":"основные глаголы","lesson":"Вебинар 1"},{"id":"be","title":"be-","subtitle":"движение внутрь","lesson":"Вебинар 1"},{"id":"ki","title":"ki-","subtitle":"движение наружу","lesson":"Вебинары 2–3"},{"id":"fel","title":"fel-","subtitle":"движение вверх","lesson":"Вебинар 4"},{"id":"le","title":"le-","subtitle":"движение вниз","lesson":"Вебинар 5"},{"id":"el","title":"el-","subtitle":"удаление, прочь","lesson":"Вебинар 6"}],"verbs":[{"group":"top100","hu":"adni","ru":"давать"},{"group":"top100","hu":"akarni","ru":"хотеть"},{"group":"top100","hu":"aludni","ru":"спать"},{"group":"top100","hu":"állni","ru":"стоять"},{"group":"top100","hu":"beszélgetni","ru":"беседовать"},{"group":"top100","hu":"beszélni","ru":"говорить, разговаривать"},{"group":"top100","hu":"csinálni","ru":"делать"},{"group":"top100","hu":"csökkenni","ru":"уменьшаться"},{"group":"top100","hu":"dolgozni","ru":"работать"},{"group":"top100","hu":"dönteni","ru":"решать"},{"group":"top100","hu":"emlékezni","ru":"помнить"},{"group":"top100","hu":"engedni","ru":"позволять; отпускать"},{"group":"top100","hu":"enni","ru":"есть"},{"group":"top100","hu":"élni","ru":"жить"},{"group":"top100","hu":"énekelni","ru":"петь"},{"group":"top100","hu":"építeni","ru":"строить"},{"group":"top100","hu":"érezni","ru":"чувствовать"},{"group":"top100","hu":"érkezni","ru":"прибывать"},{"group":"top100","hu":"érteni","ru":"понимать"},{"group":"top100","hu":"fejlődni","ru":"развиваться"},{"group":"top100","hu":"felejteni","ru":"забывать"},{"group":"top100","hu":"feküdni","ru":"лежать"},{"group":"top100","hu":"félni","ru":"бояться"},{"group":"top100","hu":"fizetni","ru":"платить"},{"group":"top100","hu":"fogni","ru":"брать; держать; ловить"},{"group":"top100","hu":"főzni","ru":"готовить, варить"},{"group":"top100","hu":"futni","ru":"бежать"},{"group":"top100","hu":"gondolni","ru":"думать, полагать"},{"group":"top100","hu":"hagyni","ru":"оставлять; позволять"},{"group":"top100","hu":"hallani","ru":"слышать"},{"group":"top100","hu":"használni","ru":"использовать"},{"group":"top100","hu":"hinni","ru":"верить"},{"group":"top100","hu":"hívni","ru":"звать; звонить"},{"group":"top100","hu":"hozni","ru":"приносить, привозить"},{"group":"top100","hu":"indulni","ru":"отправляться; начинаться"},{"group":"top100","hu":"inni","ru":"пить"},{"group":"top100","hu":"ismerni","ru":"знать; быть знакомым"},{"group":"top100","hu":"írni","ru":"писать"},{"group":"top100","hu":"járni","ru":"ходить; ездить; посещать"},{"group":"top100","hu":"játszani","ru":"играть"},{"group":"top100","hu":"javítani","ru":"исправлять, ремонтировать"},{"group":"top100","hu":"jelenteni","ru":"означать; сообщать"},{"group":"top100","hu":"jelentkezni","ru":"подавать заявку; записываться"},{"group":"top100","hu":"jönni","ru":"приходить, приезжать"},{"group":"top100","hu":"kapni","ru":"получать"},{"group":"top100","hu":"kezdeni","ru":"начинать"},{"group":"top100","hu":"keresni","ru":"искать; зарабатывать"},{"group":"top100","hu":"kerülni","ru":"попадать; стоить; избегать"},{"group":"top100","hu":"kérdezni","ru":"спрашивать"},{"group":"top100","hu":"kérni","ru":"просить"},{"group":"top100","hu":"készíteni","ru":"делать; изготавливать; готовить"},{"group":"top100","hu":"követni","ru":"следовать"},{"group":"top100","hu":"küldeni","ru":"посылать, отправлять"},{"group":"top100","hu":"lakni","ru":"жить, проживать"},{"group":"top100","hu":"látni","ru":"видеть"},{"group":"top100","hu":"lenni","ru":"быть"},{"group":"top100","hu":"maradni","ru":"оставаться"},{"group":"top100","hu":"menni","ru":"идти, ехать"},{"group":"top100","hu":"mondani","ru":"говорить, сказать"},{"group":"top100","hu":"mosni","ru":"мыть, стирать"},{"group":"top100","hu":"mutatni","ru":"показывать"},{"group":"top100","hu":"nevetni","ru":"смеяться"},{"group":"top100","hu":"nézni","ru":"смотреть"},{"group":"top100","hu":"nőni","ru":"расти, увеличиваться"},{"group":"top100","hu":"nyitni","ru":"открывать"},{"group":"top100","hu":"olvasni","ru":"читать"},{"group":"top100","hu":"próbálni","ru":"пробовать, пытаться"},{"group":"top100","hu":"repülni","ru":"летать"},{"group":"top100","hu":"segíteni","ru":"помогать"},{"group":"top100","hu":"szeretni","ru":"любить"},{"group":"top100","hu":"sétálni","ru":"гулять"},{"group":"top100","hu":"sírni","ru":"плакать"},{"group":"top100","hu":"számítani","ru":"считать; рассчитывать; иметь значение"},{"group":"top100","hu":"takarítani","ru":"убирать, чистить"},{"group":"top100","hu":"találkozni","ru":"встречаться"},{"group":"top100","hu":"találni","ru":"находить"},{"group":"top100","hu":"tanácsolni","ru":"советовать"},{"group":"top100","hu":"tanítani","ru":"учить, преподавать"},{"group":"top100","hu":"tanulni","ru":"учиться, изучать"},{"group":"top100","hu":"táncolni","ru":"танцевать"},{"group":"top100","hu":"tartani","ru":"держать; длиться; считать"},{"group":"top100","hu":"tartozni","ru":"принадлежать; быть должным"},{"group":"top100","hu":"tenni","ru":"делать; класть"},{"group":"top100","hu":"tetszeni","ru":"нравиться"},{"group":"top100","hu":"történni","ru":"происходить"},{"group":"top100","hu":"tudni","ru":"знать; уметь; мочь"},{"group":"top100","hu":"utazni","ru":"путешествовать, ехать"},{"group":"top100","hu":"úszni","ru":"плавать"},{"group":"top100","hu":"ülni","ru":"сидеть"},{"group":"top100","hu":"várni","ru":"ждать"},{"group":"top100","hu":"vásárolni","ru":"покупать"},{"group":"top100","hu":"választani","ru":"выбирать"},{"group":"top100","hu":"válaszolni","ru":"отвечать"},{"group":"top100","hu":"változtatni","ru":"изменять"},{"group":"top100","hu":"változni","ru":"меняться"},{"group":"top100","hu":"végezni","ru":"заканчивать; выполнять"},{"group":"top100","hu":"venni","ru":"брать; покупать"},{"group":"top100","hu":"vezetni","ru":"вести; управлять"},{"group":"top100","hu":"vinni","ru":"нести, везти"},{"group":"top100","hu":"zárni","ru":"закрывать"},{"group":"be","hu":"bemenni","ru":"входить, заходить (туда)","exHu":"Péter bemegy a házba.","exRu":"Петер входит в дом."},{"group":"be","hu":"bejönni","ru":"входить (сюда, к говорящему)","exHu":"Az orvos bejött a szobába.","exRu":"В комнату вошёл врач."},{"group":"be","hu":"behozni","ru":"вносить, приносить (сюда); импортировать","exHu":"Behozta a széket a szobába.","exRu":"Он внёс стул в комнату."},{"group":"be","hu":"bevinni","ru":"вносить, относить (туда); отвозить; вводить данные","exHu":"Reggel beviszem a gyereket az iskolába.","exRu":"Утром я отвезу ребёнка в школу."},{"group":"be","hu":"beadni","ru":"сдавать, подавать","exHu":"Beadta a jelentkezését.","exRu":"Он подал заявление."},{"group":"be","hu":"beállni","ru":"становиться внутрь; вставать в ряд","exHu":"Beálltam a sorba.","exRu":"Я встал в очередь."},{"group":"be","hu":"beállítani","ru":"устанавливать, настраивать","exHu":"Beállítottam az ébresztőt.","exRu":"Я установил будильник."},{"group":"be","hu":"becsukni","ru":"закрывать","exHu":"Becsukta az ablakot.","exRu":"Она закрыла окно."},{"group":"be","hu":"becsomagolni","ru":"упаковывать","exHu":"Becsomagoltam az ajándékot.","exRu":"Я упаковал подарок."},{"group":"be","hu":"beengedni","ru":"впускать","exHu":"Beengedték a vendégeket.","exRu":"Гостей впустили."},{"group":"be","hu":"befejezni","ru":"заканчивать","exHu":"Befejeztem a munkát.","exRu":"Я закончил работу."},{"group":"be","hu":"beférni","ru":"помещаться","exHu":"A doboz befér a szekrénybe.","exRu":"Коробка помещается в шкаф."},{"group":"be","hu":"befizetni","ru":"вносить платёж","exHu":"Befizettem a számlát.","exRu":"Я оплатил счёт."},{"group":"be","hu":"befagyni","ru":"замерзать, покрываться льдом","exHu":"Télen befagyott a tó.","exRu":"Зимой озеро замёрзло."},{"group":"be","hu":"befordulni","ru":"поворачивать внутрь; сворачивать","exHu":"Az autó befordult az udvarra.","exRu":"Машина повернула во двор."},{"group":"be","hu":"begépelni","ru":"вводить с клавиатуры","exHu":"Begépeltem a jelszót.","exRu":"Я ввёл пароль."},{"group":"be","hu":"begyújtani","ru":"разжигать; запускать нагрев","exHu":"Begyújtottunk a kandallóba.","exRu":"Мы разожгли камин."},{"group":"be","hu":"behajtani","ru":"загонять; въезжать; взыскивать","exHu":"A cég behajtotta a tartozást.","exRu":"Компания взыскала задолженность."},{"group":"be","hu":"behívni","ru":"звать внутрь; вызывать","exHu":"Az orvos behívta a beteget.","exRu":"Врач пригласил пациента войти."},{"group":"be","hu":"behúzni","ru":"втягивать; задвигать; задёргивать","exHu":"Behúzta a függönyt.","exRu":"Она задёрнула занавеску."},{"group":"be","hu":"beírni","ru":"вписывать; записывать","exHu":"Beírta a nevét a listába.","exRu":"Она внесла своё имя в список."},{"group":"be","hu":"beiratkozni","ru":"записываться; поступать","exHu":"Beiratkozott egy nyelvtanfolyamra.","exRu":"Он записался на языковые курсы."},{"group":"be","hu":"bejelenteni","ru":"объявлять; регистрировать","exHu":"Bejelentették az új intézkedéseket.","exRu":"Объявили о новых мерах."},{"group":"be","hu":"bejelentkezni","ru":"регистрироваться; входить в систему","exHu":"Bejelentkeztem a fiókomba.","exRu":"Я вошёл в свою учётную запись."},{"group":"be","hu":"bejutni","ru":"попадать внутрь; проходить в следующий этап","exHu":"Bejutott a döntőbe.","exRu":"Он вышел в финал."},{"group":"be","hu":"bekapcsolni","ru":"включать; подключать","exHu":"Bekapcsolta a számítógépet.","exRu":"Она включила компьютер."},{"group":"be","hu":"bekerülni","ru":"попадать; включаться; обходиться в сумму","exHu":"A neve bekerült a jelentésbe.","exRu":"Его имя попало в отчёт."},{"group":"be","hu":"bekeríteni","ru":"окружать; огораживать","exHu":"A rendőrök bekerítették az épületet.","exRu":"Полицейские окружили здание."},{"group":"be","hu":"bekeverni","ru":"вмешивать; подмешивать","exHu":"Bekeverte a lisztet a krémbe.","exRu":"Она вмешала муку в крем."},{"group":"be","hu":"beköltözni","ru":"въезжать; заселяться","exHu":"Beköltöztünk az új lakásba.","exRu":"Мы въехали в новую квартиру."},{"group":"be","hu":"bekopogni","ru":"стучать в дверь","exHu":"Valaki bekopogott az ajtón.","exRu":"Кто-то постучал в дверь."},{"group":"be","hu":"bekötni","ru":"завязывать; подключать; перевязывать","exHu":"A szerelő bekötötte az internetet.","exRu":"Мастер подключил интернет."},{"group":"be","hu":"beküldeni","ru":"посылать внутрь; отправлять","exHu":"Beküldtem a cikket a szerkesztőségbe.","exRu":"Я отправил статью в редакцию."},{"group":"be","hu":"belépni","ru":"входить; вступать","exHu":"Belépett a szakszervezetbe.","exRu":"Он вступил в профсоюз."},{"group":"be","hu":"bemásolni","ru":"копировать; вставлять","exHu":"Bemásoltam a szöveget az e-mailbe.","exRu":"Я вставил текст в письмо."},{"group":"be","hu":"bemérni","ru":"определять положение; засекать; калибровать","exHu":"A radar bemérte a repülőgépet.","exRu":"Радар засёк самолёт."},{"group":"be","hu":"bemondani","ru":"объявлять вслух; диктовать","exHu":"Bemondták a vonat késését.","exRu":"Объявили об опоздании поезда."},{"group":"be","hu":"bemutatni","ru":"показывать; представлять","exHu":"Bemutattam Annát a barátaimnak.","exRu":"Я представил Анну друзьям."},{"group":"be","hu":"bemutatkozni","ru":"представляться","exHu":"Az új kolléga bemutatkozott.","exRu":"Новый коллега представился."},{"group":"be","hu":"benyomni","ru":"вдавливать; нажимать","exHu":"Benyomta a gombot.","exRu":"Он нажал кнопку."},{"group":"be","hu":"bepakolni","ru":"укладывать; загружать внутрь","exHu":"Bepakoltuk a csomagokat az autóba.","exRu":"Мы загрузили вещи в машину."},{"group":"be","hu":"berakni","ru":"класть; загружать внутрь","exHu":"Berakta az edényeket a gépbe.","exRu":"Она загрузила посуду в машину."},{"group":"be","hu":"beszedni","ru":"собирать; взимать","exHu":"A kalauz beszedte a jegyeket.","exRu":"Кондуктор собрал билеты."},{"group":"be","hu":"beszerelni","ru":"устанавливать внутрь; монтировать","exHu":"Beszerelték az új kazánt.","exRu":"Они установили новый котёл."},{"group":"be","hu":"betakarni","ru":"накрывать; укрывать","exHu":"Betakarta a gyereket.","exRu":"Она укрыла ребёнка."},{"group":"be","hu":"betenni","ru":"класть внутрь; вставлять; навредить","exHu":"A botrány betett a karrierjének.","exRu":"Скандал погубил его карьеру."},{"group":"be","hu":"betölteni","ru":"наполнять; занимать должность","exHu":"Tíz éve tölti be ezt a tisztséget.","exRu":"Он занимает эту должность 10 лет."},{"group":"be","hu":"beugrani","ru":"ненадолго заскочить; внезапно вспомниться","exHu":"Be tudsz ugrani az irodába?","exRu":"Ты можешь ненадолго зайти в офис?"},{"group":"be","hu":"bevásárolni","ru":"закупать продукты, товары","exHu":"Szombaton bevásárolunk a hétre.","exRu":"В субботу мы закупаемся на неделю."},{"group":"be","hu":"bevenni","ru":"принимать внутрь; принимать лекарство","exHu":"Ezt a gyógyszert naponta kétszer kell bevenni.","exRu":"Это лекарство нужно принимать два раза в день."},{"group":"be","hu":"bevezetni","ru":"вводить внутрь; внедрять","exHu":"A cég új szabályokat vezetett be.","exRu":"Компания ввела новые правила."},{"group":"be","hu":"bezárni","ru":"закрывать; запирать","exHu":"Este bezárták az üzletet.","exRu":"Вечером магазин закрыли."},{"group":"ki","hu":"kimenni","ru":"выходить (туда); уезжать","exHu":"Kimegyek a szobából.","exRu":"Я выхожу из комнаты."},{"group":"ki","hu":"kijönni","ru":"выходить (сюда); ладить с кем-то; получаться","exHu":"Jól kijövök a kollégáimmal.","exRu":"Я хорошо лажу со своими коллегами."},{"group":"ki","hu":"kihozni","ru":"выносить, приносить (сюда); извлечь результат","exHu":"A pincér kihozta az ételt.","exRu":"Официант принёс еду."},{"group":"ki","hu":"kivinni","ru":"выносить, уносить (туда); вывозить","exHu":"Vidd ki a szemetet!","exRu":"Вынеси мусор!"},{"group":"ki","hu":"kiadni","ru":"выдавать, издавать, сдавать в аренду","exHu":"Anna kiadta a lakását egy fiatal párnak.","exRu":"Анна сдала свою квартиру молодой паре."},{"group":"ki","hu":"kialakítani","ru":"формировать, создавать, обустраивать","exHu":"Kényelmes irodát alakítottak ki.","exRu":"Они обустроили удобный кабинет."},{"group":"ki","hu":"kialakulni","ru":"формироваться, складываться","exHu":"Lassan kialakult egy új munkarend.","exRu":"Постепенно сформировался новый рабочий распорядок."},{"group":"ki","hu":"kiállítani","ru":"выставлять; выписывать документ","exHu":"A múzeum kiállította a festményt.","exRu":"Музей выставил картину."},{"group":"ki","hu":"kicsomagolni","ru":"распаковывать","exHu":"Kicsomagoltuk az új számítógépet.","exRu":"Мы распаковали новый компьютер."},{"group":"ki","hu":"kiderülni","ru":"выясняться, обнаруживаться","exHu":"Kiderült, hogy az információ téves volt.","exRu":"Выяснилось, что информация была ошибочной."},{"group":"ki","hu":"kidobni","ru":"выбрасывать","exHu":"Kidobta a régi újságokat.","exRu":"Она выбросила старые газеты."},{"group":"ki","hu":"kidolgozni","ru":"разрабатывать, детально прорабатывать","exHu":"A csapat kidolgozott egy új tervet.","exRu":"Команда разработала новый план."},{"group":"ki","hu":"kifejlődni","ru":"развиваться, сформироваться полностью","exHu":"A növény gyorsan kifejlődött.","exRu":"Растение быстро развилось."},{"group":"ki","hu":"kifejezni","ru":"выражать","exHu":"Szeretném kifejezni a hálámat.","exRu":"Я хочу выразить свою благодарность."},{"group":"ki","hu":"kifizetni","ru":"оплачивать, выплачивать","exHu":"Kifizettem a számlát.","exRu":"Я оплатил счёт."},{"group":"ki","hu":"kifogyni","ru":"заканчиваться, иссякать","exHu":"Kifogyott a tinta a nyomtatóból.","exRu":"В принтере закончились чернила."},{"group":"ki","hu":"kihagyni","ru":"пропускать, исключать","exHu":"Kihagytam egy kérdést a feladatból.","exRu":"Я пропустил один вопрос в задании."},{"group":"ki","hu":"kihasználni","ru":"использовать возможность; эксплуатировать","exHu":"Kihasználtuk a jó időt.","exRu":"Мы воспользовались хорошей погодой."},{"group":"ki","hu":"kihívni","ru":"вызывать специалиста; вызывать наружу","exHu":"Kihívtuk az orvost a beteghez.","exRu":"Мы вызвали врача к больному."},{"group":"ki","hu":"kihúzni","ru":"вытаскивать, выдёргивать","exHu":"Kihúzta a dugót a konnektorból.","exRu":"Он вынул вилку из розетки."},{"group":"ki","hu":"kijavítani","ru":"исправлять","exHu":"A tanár kijavította a hibákat.","exRu":"Преподаватель исправил ошибки."},{"group":"ki","hu":"kijelenteni","ru":"заявлять, объявлять","exHu":"Az igazgató kijelentette, hogy támogatja a tervet.","exRu":"Директор заявил, что поддерживает план."},{"group":"ki","hu":"kijutni","ru":"выбраться; попасть в следующий этап","exHu":"A csapat kijutott a döntőbe.","exRu":"Команда вышла в финал."},{"group":"ki","hu":"kikapcsolni","ru":"выключать","exHu":"Kikapcsoltam a számítógépet.","exRu":"Я выключил компьютер."},{"group":"ki","hu":"kikeresni","ru":"находить, отыскивать среди множества","exHu":"Kikerestem a szót a szótárból.","exRu":"Я нашёл слово в словаре."},{"group":"ki","hu":"kikerülni","ru":"выходить из состава; оказываться снаружи; избегать","exHu":"A neve kikerült a listáról.","exRu":"Его имя исключили из списка."},{"group":"ki","hu":"kikérdezni","ru":"подробно расспрашивать, опрашивать","exHu":"A rendőr kikérdezte a tanúkat.","exRu":"Полицейский опросил свидетелей."},{"group":"ki","hu":"kikérni","ru":"запрашивать; спрашивать мнение","exHu":"Kikértem az orvos véleményét.","exRu":"Я спросил мнение врача."},{"group":"ki","hu":"kikészíteni","ru":"подготавливать; изматывать","exHu":"Este kikészítettem a ruhámat másnapra.","exRu":"Вечером я приготовил одежду на следующий день."},{"group":"ki","hu":"kilépni","ru":"выходить; увольняться; покидать организацию","exHu":"Anna kilépett a csoportból.","exRu":"Анна вышла из группы."},{"group":"ki","hu":"kimaradni","ru":"пропускать; оставаться за пределами","exHu":"Egy fontos rész kimaradt a jelentésből.","exRu":"Одна важная часть не попала в отчёт."},{"group":"ki","hu":"kimondani","ru":"произносить, высказывать","exHu":"Végül kimondta az igazságot.","exRu":"В конце концов он высказал правду."},{"group":"ki","hu":"kimosni","ru":"стирать, отстирывать","exHu":"Kimostam a fehér inget.","exRu":"Я постирал белую рубашку."},{"group":"ki","hu":"kinézni","ru":"выглядывать; выглядеть; присматривать","exHu":"Kinézett az ablakon.","exRu":"Он выглянул из окна."},{"group":"ki","hu":"kinyomtatni","ru":"распечатывать","exHu":"Kinyomtattam a dokumentumot.","exRu":"Я распечатал документ."},{"group":"ki","hu":"kipróbálni","ru":"попробовать, испытывать","exHu":"Kipróbáltuk az új programot.","exRu":"Мы попробовали новую программу."},{"group":"ki","hu":"kirakni","ru":"выкладывать, выставлять","exHu":"Kirakta az árut a polcra.","exRu":"Она выложила товар на полку."},{"group":"ki","hu":"kirúgni","ru":"выгонять, увольнять","exHu":"Kirúgták az alkalmazottat.","exRu":"Сотрудника уволили."},{"group":"ki","hu":"kiszállni","ru":"выходить из транспорта; прекращать участие","exHu":"Kiszálltunk az autóból.","exRu":"Мы вышли из автомобиля."},{"group":"ki","hu":"kiszámítani","ru":"вычислять, рассчитывать","exHu":"Kiszámítottuk a teljes költséget.","exRu":"Мы рассчитали все затраты."},{"group":"ki","hu":"kiszedni","ru":"вынимать, извлекать","exHu":"Kiszedtem a ruhákat a mosógépből.","exRu":"Я вынул одежду из стиральной машины."},{"group":"ki","hu":"kitakarítani","ru":"полностью убирать, очищать","exHu":"Szombaton kitakarítottuk a lakást.","exRu":"В субботу мы убрали квартиру."},{"group":"ki","hu":"kitenni","ru":"выставлять, класть наружу; подвергать","exHu":"Kitette a könyveket az asztalra.","exRu":"Она выложила книги на стол."},{"group":"ki","hu":"kitölteni","ru":"заполнять документ, форму","exHu":"Kitöltöttem az adatlapot.","exRu":"Я заполнил анкету."},{"group":"ki","hu":"kitörölni","ru":"удалять, стирать","exHu":"Kitöröltem a régi fájlokat.","exRu":"Я удалил старые файлы."},{"group":"ki","hu":"kiválasztani","ru":"выбирать из нескольких вариантов","exHu":"Kiválasztottuk a legjobb jelöltet.","exRu":"Мы выбрали лучшего кандидата."},{"group":"ki","hu":"kivágni","ru":"вырезать, срубать; выбрасывать","exHu":"Kivágtuk a beteg fát.","exRu":"Мы срубили больное дерево."},{"group":"ki","hu":"kivenni","ru":"вынимать, доставать; снять (номер, деньги)","exHu":"Kivette a kulcsot a zsebéből.","exRu":"Он достал ключ из кармана."},{"group":"ki","hu":"kizárni","ru":"исключать; запереть снаружи; исключать возможность","exHu":"Ezt teljesen kizárom.","exRu":"Я это полностью исключаю."},{"group":"fel","hu":"felmenni","ru":"подниматься (туда)","exHu":"Lifttel felmegyek a harmadik emeletre.","exRu":"Я поднимаюсь на лифте на третий этаж."},{"group":"fel","hu":"feljönni","ru":"подниматься (сюда, к говорящему)","exHu":"Este feljössz hozzánk a második emeletre?","exRu":"Ты поднимешься к нам на второй этаж вечером?"},{"group":"fel","hu":"felhozni","ru":"приносить наверх (сюда)","exHu":"A futár felhozza a csomagot az emeletre.","exRu":"Курьер поднимает посылку наверх."},{"group":"fel","hu":"felvinni","ru":"относить наверх (туда)","exHu":"A pincér felviszi az ételt az emeletre.","exRu":"Официант относит еду наверх."},{"group":"fel","hu":"feladni","ru":"отправлять; сдавать; отказываться от борьбы","exHu":"Feladtam a levelet.","exRu":"Я отправил письмо."},{"group":"fel","hu":"felállni","ru":"вставать","exHu":"Felállt a székről.","exRu":"Он встал со стула."},{"group":"fel","hu":"felállítani","ru":"устанавливать, возводить","exHu":"Felállították a sátrat.","exRu":"Они установили палатку."},{"group":"fel","hu":"felébredni","ru":"просыпаться","exHu":"Ma korán felébredtem.","exRu":"Сегодня я рано проснулся."},{"group":"fel","hu":"felébreszteni","ru":"будить","exHu":"Az ébresztőóra felébresztett.","exRu":"Будильник меня разбудил."},{"group":"fel","hu":"felépíteni","ru":"строить, создавать","exHu":"Felépítettek egy új házat.","exRu":"Они построили новый дом."},{"group":"fel","hu":"felépülni","ru":"быть построенным; выздоравливать","exHu":"Gyorsan felépült a betegségből.","exRu":"Он быстро выздоровел после болезни."},{"group":"fel","hu":"felfedezni","ru":"обнаруживать, открывать","exHu":"Felfedeztünk egy kis éttermet.","exRu":"Мы обнаружили небольшой ресторан."},{"group":"fel","hu":"felfogni","ru":"понимать; улавливать","exHu":"Nem fogtam fel a kérdést.","exRu":"Я не понял вопрос."},{"group":"fel","hu":"felforrni","ru":"закипать; вскипеть от эмоций","exHu":"Felforrt a víz.","exRu":"Вода закипела."},{"group":"fel","hu":"felfordulni","ru":"перевернуться, опрокинуться; пойти кувырком","exHu":"Az autó felfordult az árokban.","exRu":"Машина перевернулась в кювете."},{"group":"fel","hu":"felgyújtani","ru":"поджигать","exHu":"A gyújtogató felgyújtotta az épületet.","exRu":"Поджигатель поджёг здание."},{"group":"fel","hu":"felhívni","ru":"звонить; обращать внимание","exHu":"Este felhívtam Annát.","exRu":"Вечером я позвонил Анне."},{"group":"fel","hu":"felhúzni","ru":"натягивать; поднимать","exHu":"Felhúzta a csizmáját.","exRu":"Он надел сапоги."},{"group":"fel","hu":"felírni","ru":"записывать; выписывать лекарство","exHu":"Az orvos felírta a gyógyszert.","exRu":"Врач выписал лекарство."},{"group":"fel","hu":"feliratkozni","ru":"записаться, подписаться","exHu":"Feliratkoztam a hírlevélre.","exRu":"Я подписался на рассылку."},{"group":"fel","hu":"felismerni","ru":"узнавать, распознавать","exHu":"Azonnal felismertem a hangját.","exRu":"Я сразу узнал его голос."},{"group":"fel","hu":"feljelenteni","ru":"заявлять в полицию","exHu":"Feljelentették a csalót.","exRu":"На мошенника заявили в полицию."},{"group":"fel","hu":"felkapni","ru":"быстро поднимать, хватать","exHu":"Felkapta a táskáját, és elindult.","exRu":"Она схватила сумку и ушла."},{"group":"fel","hu":"felkelni","ru":"вставать, подниматься","exHu":"Hétköznap hatkor kelek fel.","exRu":"В будни я встаю в шесть."},{"group":"fel","hu":"felkérni","ru":"официально просить, приглашать выполнить задачу","exHu":"Felkérték, hogy tartson előadást.","exRu":"Его попросили выступить с докладом."},{"group":"fel","hu":"felkeresni","ru":"посещать; разыскивать; обращаться","exHu":"Felkerestem egy szakembert.","exRu":"Я обратился к специалисту."},{"group":"fel","hu":"felkészíteni","ru":"подготавливать кого-либо","exHu":"A tanár felkészítette a diákokat a vizsgára.","exRu":"Преподаватель подготовил учеников к экзамену."},{"group":"fel","hu":"felkészülni","ru":"готовиться","exHu":"Felkészültem a megbeszélésre.","exRu":"Я подготовился к совещанию."},{"group":"fel","hu":"felmászni","ru":"взбираться","exHu":"A macska felmászott a fára.","exRu":"Кошка забралась на дерево."},{"group":"fel","hu":"felmondani","ru":"увольняться; расторгать; рассказывать наизусть","exHu":"Péter felmondott a munkahelyén.","exRu":"Петер уволился с работы."},{"group":"fel","hu":"felmutatni","ru":"показывать, предъявлять","exHu":"Felmutatta a belépőkártyáját.","exRu":"Он предъявил пропуск."},{"group":"fel","hu":"felnézni","ru":"смотреть вверх; уважать","exHu":"Mindig felnéztem a tanáromra.","exRu":"Я всегда уважал своего учителя."},{"group":"fel","hu":"felolvasni","ru":"читать вслух","exHu":"A tanár felolvasta a szöveget.","exRu":"Учитель прочитал текст вслух."},{"group":"fel","hu":"felöltözni","ru":"одеваться","exHu":"Gyorsan felöltöztem.","exRu":"Я быстро оделся."},{"group":"fel","hu":"felrakni","ru":"ставить или класть наверх","exHu":"Felraktam a könyveket a polcra.","exRu":"Я поставил книги на полку."},{"group":"fel","hu":"felsorolni","ru":"перечислять","exHu":"Felsorolta a legfontosabb feladatokat.","exRu":"Он перечислил самые важные задачи."},{"group":"fel","hu":"felszállni","ru":"подниматься; садиться в транспорт; взлетать","exHu":"Felszálltunk a buszra.","exRu":"Мы сели в автобус."},{"group":"fel","hu":"felszedni","ru":"подбирать, собирать","exHu":"Felszedte a földről a papírokat.","exRu":"Она подняла бумаги с пола."},{"group":"fel","hu":"feltalálni","ru":"изобретать","exHu":"Bell feltalálta a telefont.","exRu":"Белл изобрёл телефон."},{"group":"fel","hu":"feltölteni","ru":"наполнять; заряжать; загружать файл (на сайт)","exHu":"Feltöltöttem a dokumentumot a rendszerbe.","exRu":"Я загрузил документ в систему."},{"group":"fel","hu":"felújítani","ru":"ремонтировать, обновлять","exHu":"Felújították a régi lakást.","exRu":"Они отремонтировали старую квартиру."},{"group":"fel","hu":"felvenni","ru":"поднимать; надевать; записывать; принимать на работу","exHu":"Felvette a kabátját.","exRu":"Он надел пальто."},{"group":"fel","hu":"felvágni","ru":"разрезать; хвастаться","exHu":"Felvágta a kenyeret.","exRu":"Она нарезала хлеб."},{"group":"fel","hu":"felkapcsolni","ru":"включать свет","exHu":"Péter felkapcsolta a villanyt a szobában.","exRu":"Петер включил свет в комнате."},{"group":"le","hu":"lemenni","ru":"спускаться (туда)","exHu":"Anna lement a pincébe.","exRu":"Анна спустилась в подвал."},{"group":"le","hu":"lejönni","ru":"спускаться (сюда, к говорящему)","exHu":"A szomszéd lejött a lépcsőn.","exRu":"Сосед спустился по лестнице."},{"group":"le","hu":"lehozni","ru":"приносить вниз (сюда)","exHu":"Péter lehozta a bőröndöt a padlásról.","exRu":"Петер принёс чемодан с чердака вниз."},{"group":"le","hu":"levinni","ru":"относить вниз (туда)","exHu":"A munkások levitték a dobozokat a pincébe.","exRu":"Рабочие отнесли коробки в подвал."},{"group":"le","hu":"leadni","ru":"сдавать, подавать, передавать","exHu":"Holnap le kell adnom a dokumentumokat.","exRu":"Завтра мне нужно сдать документы."},{"group":"le","hu":"leállni","ru":"останавливаться, прекращать работу","exHu":"A gyártás leállt.","exRu":"Производство остановилось."},{"group":"le","hu":"leállítani","ru":"останавливать, выключать","exHu":"A cég leállította a gyártást.","exRu":"Компания остановила производство."},{"group":"le","hu":"lebeszélni","ru":"отговаривать","exHu":"Senki sem tudott lebeszélni róla.","exRu":"Никто не смог меня отговорить."},{"group":"le","hu":"lecsökkenteni","ru":"снижать, уменьшать","exHu":"A bolt lecsökkentette az árakat.","exRu":"Магазин снизил цены."},{"group":"le","hu":"lecsúszni","ru":"соскальзывать, съезжать вниз","exHu":"A szemüveg lecsúszott az orráról.","exRu":"Очки сползли с его носа."},{"group":"le","hu":"ledobni","ru":"бросать вниз, сбрасывать","exHu":"Dobd le nekem a kulcsot!","exRu":"Сбрось мне ключ!"},{"group":"le","hu":"ledolgozni","ru":"отрабатывать","exHu":"Ezt a három órát később le kell dolgoznom.","exRu":"Эти три часа мне нужно будет отработать позже."},{"group":"le","hu":"leesni","ru":"падать, сваливаться","exHu":"Leesett a telefonom a földre.","exRu":"Мой телефон упал на пол."},{"group":"le","hu":"leégni","ru":"сгорать; обгорать на солнце; опозориться","exHu":"Leégtem a napon.","exRu":"Я обгорел на солнце."},{"group":"le","hu":"lefagyni","ru":"замерзать; зависать (о программе)","exHu":"Munka közben lefagyott a program.","exRu":"Во время работы программа зависла."},{"group":"le","hu":"lefeküdni","ru":"ложиться","exHu":"Fáradt vagyok, lefekszem.","exRu":"Я устала, пойду спать."},{"group":"le","hu":"lefesteni","ru":"красить, закрашивать","exHu":"Mikor festitek le a kerítést?","exRu":"Когда вы покрасите забор?"},{"group":"le","hu":"lefoglalni","ru":"бронировать; занимать; конфисковывать","exHu":"Lefoglaltam egy szobát a szállodában.","exRu":"Я забронировал номер в гостинице."},{"group":"le","hu":"lefogyni","ru":"худеть","exHu":"Szeretnék egy kicsit lefogyni.","exRu":"Я хотела бы немного похудеть."},{"group":"le","hu":"lefordítani","ru":"переводить; поворачивать вниз","exHu":"Lefordította a levelet magyarra.","exRu":"Она перевела письмо на венгерский язык."},{"group":"le","hu":"lehúzni","ru":"тянуть вниз, опускать; ободрать (по деньгам)","exHu":"Lehúzta a redőnyt.","exRu":"Он опустил жалюзи."},{"group":"le","hu":"leírni","ru":"записывать, описывать","exHu":"Leírtam a címet.","exRu":"Я записал адрес."},{"group":"le","hu":"lejárni","ru":"истекать (о сроке); регулярно спускаться","exHu":"Lejárt az útlevelem.","exRu":"Срок действия моего паспорта истёк."},{"group":"le","hu":"lekapcsolni","ru":"выключать (свет); отключать","exHu":"Kapcsold le a lámpát, kérlek!","exRu":"Выключи лампу, пожалуйста!"},{"group":"le","hu":"lelépni","ru":"сойти вниз; уйти, смыться","exHu":"Én most lelépek.","exRu":"Я пошёл / Я ухожу."},{"group":"le","hu":"lemaradni","ru":"отставать; опаздывать на транспорт; пропускать","exHu":"Lemaradtam a buszról.","exRu":"Я опоздал на автобус."},{"group":"le","hu":"lemásolni","ru":"копировать, переписывать, списывать","exHu":"Ne másold le a válaszokat!","exRu":"Не списывай ответы!"},{"group":"le","hu":"lemosni","ru":"смывать, отмывать с поверхности","exHu":"Lemostam a sarat az autóról.","exRu":"Я смыл грязь с автомобиля."},{"group":"le","hu":"lenézni","ru":"смотреть вниз; смотреть свысока","exHu":"Ne nézz le másokat!","exRu":"Не смотри на других свысока!"},{"group":"le","hu":"lenyomni","ru":"нажимать вниз; прижимать; побеждать","exHu":"Lenyomta a gombot.","exRu":"Он нажал кнопку."},{"group":"le","hu":"leolvasni","ru":"считывать, снимать показания","exHu":"Leolvastam a villanyóra állását.","exRu":"Я снял показания электросчётчика."},{"group":"le","hu":"lerakni","ru":"класть, ставить; высаживать","exHu":"Le tudsz rakni a sarkon?","exRu":"Можешь высадить меня на углу?"},{"group":"le","hu":"leszállni","ru":"спускаться; выходить из транспорта; приземляться","exHu":"A következő megállónál szállunk le.","exRu":"Мы выходим на следующей остановке."},{"group":"le","hu":"leszokni","ru":"отвыкать, бросать привычку","exHu":"Leszokott a dohányzásról.","exRu":"Он бросил курить."},{"group":"le","hu":"letakarni","ru":"накрывать, покрывать","exHu":"A kertben letakartuk a növényeket.","exRu":"В саду мы укрыли растения."},{"group":"le","hu":"letölteni","ru":"скачивать на устройство","exHu":"Letöltöttem a dokumentumot.","exRu":"Я скачал документ."},{"group":"le","hu":"levágni","ru":"отрезать, срезать","exHu":"Levágott egy szelet kenyeret.","exRu":"Он отрезал кусок хлеба."},{"group":"el","hu":"elmenni","ru":"уходить, уезжать; сходить куда-то","exHu":"Péter elment az irodából.","exRu":"Петер ушёл из офиса."},{"group":"el","hu":"elindulni","ru":"отправляться, трогаться","exHu":"A vonat elindult.","exRu":"Поезд отправился."},{"group":"el","hu":"elköltözni","ru":"переезжать (из одного места в другое)","exHu":"Anna elköltözött Budapestről Bécsbe.","exRu":"Анна переехала из Будапешта в Вену."},{"group":"el","hu":"eladni","ru":"продавать","exHu":"Eladták a régi lakásukat.","exRu":"Они продали свою старую квартиру."},{"group":"el","hu":"elaludni","ru":"засыпать; проспать","exHu":"A gyerek hamar elaludt.","exRu":"Ребёнок быстро заснул."},{"group":"el","hu":"elárulni","ru":"выдавать, раскрывать секрет; предавать","exHu":"Nem árulta el a titkot.","exRu":"Он не раскрыл секрет."},{"group":"el","hu":"elázni","ru":"промокать","exHu":"Teljesen eláztunk az esőben.","exRu":"Мы совершенно промокли под дождём."},{"group":"el","hu":"elbújni","ru":"прятаться","exHu":"A macska elbújt az ágy alatt.","exRu":"Кошка спряталась под кроватью."},{"group":"el","hu":"elbúcsúzni","ru":"прощаться","exHu":"Elbúcsúztam a kollégáimtól.","exRu":"Я попрощался с коллегами."},{"group":"el","hu":"elcsúszni","ru":"поскользнуться; сдвинуться по времени","exHu":"Elcsúsztam a jeges úton.","exRu":"Я поскользнулся на обледенелой дороге."},{"group":"el","hu":"elérni","ru":"достигать; успевать; дозваниваться","exHu":"Elértem a nyolcórás vonatot.","exRu":"Я успел на восьмичасовой поезд."},{"group":"el","hu":"elfelejteni","ru":"забывать","exHu":"Elfelejtettem bezárni az ajtót.","exRu":"Я забыл закрыть дверь."},{"group":"el","hu":"elfogadni","ru":"принимать; соглашаться","exHu":"Elfogadtam az ajánlatot.","exRu":"Я принял предложение."},{"group":"el","hu":"elfoglalni","ru":"занимать; захватывать","exHu":"Valaki elfoglalta a helyemet.","exRu":"Кто-то занял моё место."},{"group":"el","hu":"elengedni","ru":"отпускать; прощать; освобождать","exHu":"A tanár korábban elengedett minket.","exRu":"Учитель отпустил нас раньше."},{"group":"el","hu":"elhagyni","ru":"терять; оставлять, покидать","exHu":"Elhagytam a kulcsomat.","exRu":"Я потерял ключ."},{"group":"el","hu":"elhalasztani","ru":"откладывать, переносить","exHu":"Elhalasztották a találkozót.","exRu":"Встречу перенесли."},{"group":"el","hu":"elindítani","ru":"запускать","exHu":"Elindítottam a programot.","exRu":"Я запустил программу."},{"group":"el","hu":"eljönni","ru":"приходить, приезжать","exHu":"Sok vendég eljött a rendezvényre.","exRu":"На мероприятие пришло много гостей."},{"group":"el","hu":"elkészíteni","ru":"изготавливать, подготавливать","exHu":"Este elkészítettem a jelentést.","exRu":"Вечером я подготовил отчёт."},{"group":"el","hu":"elkésni","ru":"опаздывать","exHu":"Ma elkéstem a munkából.","exRu":"Сегодня я опоздал на работу."},{"group":"el","hu":"elkezdeni","ru":"начинать","exHu":"Mikor kezdted el a tanfolyamot?","exRu":"Когда ты начал курс?"},{"group":"el","hu":"elköszönni","ru":"прощаться","exHu":"Indulás előtt elköszöntem mindenkitől.","exRu":"Перед уходом я со всеми попрощался."},{"group":"el","hu":"ellátni","ru":"снабжать; обслуживать; выполнять обязанности","exHu":"A kórház sok beteget lát el.","exRu":"Больница обслуживает много пациентов."},{"group":"el","hu":"elmondani","ru":"рассказывать, сообщать","exHu":"Elmondtam neki, mi történt.","exRu":"Я рассказал ему, что произошло."},{"group":"el","hu":"elrontani","ru":"испортить; сделать неправильно","exHu":"Elrontottam a jelszót.","exRu":"Я неправильно ввёл пароль."},{"group":"el","hu":"elszaladni","ru":"убегать; быстро сходить куда-либо","exHu":"Elszaladtam a boltba tejért.","exRu":"Я быстро сходил в магазин за молоком."},{"group":"el","hu":"elszállni","ru":"улетать; уезжать; рассеиваться","exHu":"A madarak ősszel elszállnak.","exRu":"Осенью птицы улетают."},{"group":"el","hu":"eltalálni","ru":"попадать в цель; угадывать","exHu":"Eltaláltad a helyes választ.","exRu":"Ты угадал правильный ответ."},{"group":"el","hu":"eltévedni","ru":"заблудиться","exHu":"Eltévedtünk a városközpontban.","exRu":"Мы заблудились в центре города."}],"sentences":[{"lesson":2,"hu":"Péter bemegy a házba.","ru":"Петер входит в дом. (говорящий не в доме)"},{"lesson":2,"hu":"Anna behozza a táskát a szobába.","ru":"Анна вносит сумку в комнату. (говорящий в комнате)"},{"lesson":2,"hu":"Mi bekapcsoljuk a gépet.","ru":"Мы включаем аппарат."},{"lesson":2,"hu":"Beírtam a nevet a listába.","ru":"Я внёс имя в список."},{"lesson":2,"hu":"Bezárták az ablakokat.","ru":"Они закрыли окна."},{"lesson":2,"hu":"Beadtad a jelentkezést.","ru":"Ты подал заявление."},{"lesson":2,"hu":"Az orvos behívta a következő beteget.","ru":"Врач вызвал следующего пациента."},{"lesson":2,"hu":"A tanár beengedi a diákokat.","ru":"Учитель впускает учеников."},{"lesson":2,"hu":"Bevásároltunk a hétvégére.","ru":"Мы закупились на выходные."},{"lesson":2,"hu":"A gyerekek beszálltak az autóba.","ru":"Дети сели в автомобиль."},{"lesson":2,"hu":"Nem mentem be az irodába.","ru":"Я не вошёл в офис."},{"lesson":2,"hu":"Mikor jössz be?","ru":"Когда ты войдёшь? (сюда)"},{"lesson":2,"hu":"Miért vitte be a széket?","ru":"Почему он внёс стул? (куда-то)"},{"lesson":2,"hu":"Ki hozta be a kávét?","ru":"Кто принёс кофе? (сюда)"},{"lesson":2,"hu":"Mit írsz be az űrlapba?","ru":"Что ты вписываешь в анкету?"},{"lesson":2,"hu":"Mi nem kapcsoljuk be a tévét.","ru":"Мы не включаем телевизор."},{"lesson":2,"hu":"Hova ülnek be?","ru":"Куда они заходят посидеть?"},{"lesson":2,"hu":"Melyik számlát fizetted be?","ru":"Какой (который из) счёт ты оплатил?"},{"lesson":2,"hu":"Csak Márta adta be a dokumentumokat.","ru":"Только Марта подала документы."},{"lesson":2,"hu":"Három vendéget engedtek be, nem négyet.","ru":"Они впустили трёх гостей, а не четырёх."},{"lesson":2,"hu":"Ne vedd be ezt a gyógyszert!","ru":"Не принимай это лекарство!"},{"lesson":2,"hu":"Most tedd be a könyvet a táskába!","ru":"Сейчас положи книгу в сумку!"},{"lesson":2,"hu":"Ki zárta be az üzletet?","ru":"Кто закрыл магазин?"},{"lesson":2,"hu":"Miért jelentkeztetek be ilyen későn?","ru":"Почему вы так поздно зарегистрировались?"},{"lesson":2,"hu":"Senki sem lépett be a terembe.","ru":"Никто не вошёл в зал."},{"lesson":2,"hu":"Mikor ment ki Anna?","ru":"Когда Анна вышла?"},{"lesson":2,"hu":"Ki jött ki a szobából?","ru":"Кто вышел из комнаты?"},{"lesson":2,"hu":"Melyik dobozt hoztad ki a garázsból?","ru":"Какую (которую из) коробку ты принёс из гаража?"},{"lesson":2,"hu":"Este vidd ki a szemetet!","ru":"Вечером вынеси мусор!"},{"lesson":2,"hu":"Nem vitték ki a gyerekeket az udvarra.","ru":"Они не вывели детей во двор."},{"lesson":2,"hu":"Be akarok menni.","ru":"Я хочу войти."},{"lesson":2,"hu":"Nem akar bejönni.","ru":"Она не хочет заходить."},{"lesson":2,"hu":"Nem kell bevinned a széket.","ru":"Тебе не нужно заносить стул."},{"lesson":2,"hu":"Be tudsz jönni most?","ru":"Ты можешь сейчас войти?"},{"lesson":2,"hu":"Mikor tudsz bejönni?","ru":"Когда ты можешь войти?"},{"lesson":2,"hu":"Nyolckor be szoktak menni.","ru":"Они обычно входят в восемь часов."},{"lesson":2,"hu":"Nem szokott itt bemenni.","ru":"Он обычно не входит здесь."},{"lesson":2,"hu":"Ki akarok menni.","ru":"Я хочу выйти."},{"lesson":2,"hu":"Nem akarunk kimenni.","ru":"Мы не хотим выходить."},{"lesson":2,"hu":"Ki kell hoznod a dobozt.","ru":"Тебе нужно вынести (сюда) коробку."},{"lesson":2,"hu":"Ma nem kell kivinnünk a szemetet.","ru":"Сегодня нам не нужно выносить мусор."},{"lesson":2,"hu":"Hamarosan ki fog jönni.","ru":"Он скоро выйдет."},{"lesson":2,"hu":"Ki tudsz vinni minket az állomásra?","ru":"Ты можешь отвезти нас на вокзал?"},{"lesson":2,"hu":"Szeretnék bemenni.","ru":"Я хотел бы войти."},{"lesson":2,"hu":"Szeretnék kimenni.","ru":"Я хотел бы выйти."},{"lesson":3,"hu":"Ma korán indulsz?","ru":"Ты сегодня рано уходишь?"},{"lesson":3,"hu":"Akkor ki tudod vinni a szemetet?","ru":"Тогда ты сможешь вынести мусор?"},{"lesson":3,"hu":"Tegnap betetted a felső fiókba.","ru":"Вчера ты положил их в верхний ящик."},{"lesson":3,"hu":"Nincs ott. Nem vetted ki véletlenül?","ru":"Там их нет. Ты их не вынимала случайно?"},{"lesson":3,"hu":"A vasaló már ki van kapcsolva, de az ablak még nyitva van.","ru":"Утюг уже выключен, но окно ещё открыто."},{"lesson":3,"hu":"Indulás előtt becsukom az ablakot, és kiviszem a szemetet.","ru":"Перед уходом я закрою окно и вынесу мусор."},{"lesson":3,"hu":"Nem tudsz bemenni a kutyával?","ru":"Ты не можешь зайти с собакой?"},{"lesson":3,"hu":"Nem, ide nem szabad kutyákkal bemenni.","ru":"Нет, сюда нельзя входить с собаками."},{"lesson":3,"hu":"Rendben, akkor egyedül megyek be.","ru":"Хорошо, тогда я зайду один."},{"lesson":3,"hu":"Beülünk ebbe a kávézóba?","ru":"Мы зайдём (посидеть) в это кафе?"},{"lesson":3,"hu":"Akkor egyelőre kiülünk a teraszra.","ru":"Тогда мы пока сядем на террасе."},{"lesson":3,"hu":"Akkor majd bemegyünk.","ru":"В таком случае мы пересядем внутрь."},{"lesson":3,"hu":"Nem kell aggódni, hamarosan mindent kihoz.","ru":"Не стоит волноваться, скоро он всё принесёт."},{"lesson":3,"hu":"Kimegyek a mosdóba kezet mosni.","ru":"Я схожу в уборную помыть руки."},{"lesson":3,"hu":"Betesszük a gardróbba, majd kipakoljuk.","ru":"Поставим её в гардеробную, потом разберём."},{"lesson":3,"hu":"Üresek, már ki lehet vinni őket a lakásból.","ru":"Они пустые, их уже можно вынести из квартиры."},{"lesson":3,"hu":"A cserepes virágokat kivisszük az erkélyre.","ru":"Цветы в горшках вынесем на балкон."},{"lesson":2,"hu":"Teljesen kiment a fejemből a találkozó.","ru":"Я совершенно забыла о встрече."},{"lesson":2,"hu":"A szomszédainkkal mindig jól kijöttünk.","ru":"Мы всегда хорошо ладили с соседями."},{"lesson":2,"hu":"Nehezen jövök ki a fizetésemből.","ru":"Я с трудом укладываюсь в свою зарплату."},{"lesson":2,"hu":"Ez a szín soha nem megy ki a divatból.","ru":"Этот цвет никогда не выйдет из моды."},{"lesson":1,"hu":"A tervünk bejött.","ru":"Наш план сработал."},{"lesson":1,"hu":"Nem ugrik be a neve.","ru":"Я никак не могу вспомнить его имя."}],"quiz":[{"lesson":3,"prompt":"Reggel nyolckor ___ az irodába. (я)","options":["bemegy","kimegy","bejön","kijön"],"answer":"bemegy"},{"lesson":3,"prompt":"Péter kinyitotta az ajtót, és ___ a szobából.","options":["bemegy","kimegy","bevisz","kivisz"],"answer":"kimegy"},{"lesson":3,"prompt":"Kérlek, ___ a tejet a hűtőből!","options":["betesz","kivesz","bevisz","kivág"],"answer":"kivesz"},{"lesson":3,"prompt":"Anya ___ a tortát a hűtőbe.","options":["betesz","kivesz","kihoz","kivisz"],"answer":"betesz"},{"lesson":3,"prompt":"Nagyon hideg van. ___ az ablakot!","options":["becsuk","kinyit","bemegy","kiad"],"answer":"becsuk"},{"lesson":3,"prompt":"Meleg van a szobában. ___ egy kicsit az ablakot!","options":["bekapcsol","bezár","kinyit","bevisz"],"answer":"kinyit"},{"lesson":3,"prompt":"A vendégek este hétkor ___ az étterembe.","options":["kivesz","bejön","kivisz","kijön"],"answer":"bejön"},{"lesson":3,"prompt":"A pincér ___ az üres poharakat a konyhába.","options":["kivesz","bevisz","kivisz","kijön"],"answer":"bevisz"},{"lesson":3,"prompt":"A kutya meglátta a macskát, és gyorsan ___ a kertbe.","options":["beáll","átfut","kiáll","kifut"],"answer":"kifut"},{"lesson":3,"prompt":"Nyitva volt az ajtó, és a macska ___ a lakásból.","options":["bejön","bemegy","befut","kifut"],"answer":"kifut"},{"lesson":3,"prompt":"Este mindig ___ a bejárati ajtót. (я)","options":["kikapcsol","kinyit","bekapcsol","bezár"],"answer":"bezár"},{"lesson":3,"prompt":"Amikor hazaérek, először ___ a lámpát. (я)","options":["kikapcsol","bekapcsol","kinyit","bezár"],"answer":"bekapcsol"},{"lesson":3,"prompt":"Lefekvés előtt ___ a televíziót. (я)","options":["bekapcsol","kikapcsol","kivisz","bevisz"],"answer":"kikapcsol"},{"lesson":3,"prompt":"A tanár ___ a diákok nevét a füzetbe.","options":["beír","kiír","kivág","bemond"],"answer":"beír"},{"lesson":3,"prompt":"Kérlek, ___ ezt a telefonszámot a füzetedből!","options":["beír","kiír","bejön","kivesz"],"answer":"kiír"},{"lesson":3,"prompt":"Nem tudom a jelszót, ezért nem tudok ___ a rendszerbe.","options":["belép","kilép","bemegy","kijön"],"answer":"belép"},{"lesson":3,"prompt":"Ha befejezted a munkát, ___ a programból!","options":["bekapcsol","kilép","belép","beír"],"answer":"kilép"},{"lesson":3,"prompt":"A rendőr ___ az adatokat a számítógépbe.","options":["beír","kivisz","kivesz","kiír"],"answer":"beír"},{"lesson":3,"prompt":"A nagymama ___ a pénzt a táskájából.","options":["kiad","bevisz","betesz","kivesz"],"answer":"kivesz"},{"lesson":3,"prompt":"Sok pénzt ___ ezért a telefonért. (я)","options":["bead","kivesz","kiad","bevesz"],"answer":"kiad"},{"lesson":3,"prompt":"A diák ___ a házi feladatot a tanárnak.","options":["beír","kiad","bead","kivesz"],"answer":"bead"},{"lesson":3,"prompt":"Az orvos azt mondta, hogy naponta háromszor kell ___ ezt a gyógyszert.","options":["kiad","kivesz","bead","bevesz"],"answer":"bevesz"},{"lesson":3,"prompt":"A beteg ___ a gyógyszert, és lefeküdt aludni.","options":["kivesz","bevisz","bevesz","kivisz"],"answer":"bevesz"},{"lesson":3,"prompt":"A szerelő ___ az új mosógépet a lakásba.","options":["behoz","kihoz","kivesz","kijön"],"answer":"behoz"},{"lesson":3,"prompt":"Kérlek, ___ a szemetet a lakásból!","options":["bejön","kivisz","behoz","bevisz"],"answer":"kivisz"},{"lesson":3,"prompt":"A titkárnő ___ a dokumentumokat, hogy mindenki kapjon egy példányt.","options":["beír","bevisz","kinyomtat","bekapcsol"],"answer":"kinyomtat"},{"lesson":3,"prompt":"Nem hallom jól a rádiót. ___ egy kicsit hangosabbra!","options":["beállít","bekapcsol","kiállít","kikapcsol"],"answer":"beállít"},{"lesson":3,"prompt":"A rendőrség ___ az autót a forgalomból.","options":["beállít","kivon","kiad","bevon"],"answer":"kivon"},{"lesson":3,"prompt":"Az orvos több vizsgálat után ___ egy súlyos betegséget.","options":["kizár","bezár","bevesz","kivesz"],"answer":"kizár"},{"lesson":3,"prompt":"A főnök ___ egy új kollégát a csapatba.","options":["kiad","bevesz","kizár","kivesz"],"answer":"bevesz"},{"lesson":4,"prompt":"Reggel ___ az irodába.","ru":"Утром я захожу в офис.","options":["bemegyek","kimegyek","felmegyek"],"answer":"bemegyek"},{"lesson":4,"prompt":"A rendőr ___ a férfit az épületből.","ru":"Полицейский вызывает мужчину из здания.","options":["kihívja","behívja","felhívja"],"answer":"kihívja"},{"lesson":4,"prompt":"A főnök ___ Pétert az irodába.","ru":"Начальник вызывает Петера в кабинет.","options":["behívja","kihívja","felhívja"],"answer":"behívja"},{"lesson":4,"prompt":"A tanár ___ Annát a táblához.","ru":"Учитель вызывает Анну к доске.","options":["kihívja","behívja"],"answer":"kihívja"},{"lesson":4,"prompt":"A rendőr ___ az adatokat a rendszerbe.","ru":"Полицейский вводит данные в систему.","options":["beírja","kiírja","felírja"],"answer":"beírja"},{"lesson":4,"prompt":"Meleg van, ezért ___ az ablakot.","ru":"Жарко, поэтому я открываю окно.","options":["kinyitom","bezárom","becsukom"],"answer":"kinyitom"},{"lesson":4,"prompt":"Ez a kulcs nem jó, nem tudom ___ az ajtót.","ru":"Этот ключ не подходит, я не могу открыть дверь.","options":["kinyitni","bezárni","becsukni"],"answer":"kinyitni"},{"lesson":4,"prompt":"Este ___ az ajtót.","ru":"Вечером я запираю дверь.","options":["bezárom","kinyitom","becsukom"],"answer":"bezárom"},{"lesson":4,"prompt":"___ az új szavakat a szótárba.","ru":"Я записываю новые слова в словарь.","options":["Beírom","Kiírom","Felírom"],"answer":"Beírom"},{"lesson":4,"prompt":"___ a telefonszámot a füzetből.","ru":"Я выписываю номер телефона из тетради.","options":["Kiírom","Felírom","Beírom"],"answer":"Kiírom"},{"lesson":4,"prompt":"___ a nevemet a listára.","ru":"Я записываю своё имя в список.","options":["Felírom","Beírom","Kiírom"],"answer":"Felírom"},{"lesson":4,"prompt":"Reggel ___ a számítógépet.","ru":"Утром я включаю компьютер.","options":["bekapcsolom","kikapcsolom","felkapcsolom"],"answer":"bekapcsolom"},{"lesson":4,"prompt":"Lefekvés előtt ___ a tévét.","ru":"Перед сном я выключаю телевизор.","options":["kikapcsolom","bekapcsolom","felkapcsolom"],"answer":"kikapcsolom"},{"lesson":4,"prompt":"Este ___ a csillárt.","ru":"Вечером я включаю люстру.","options":["felkapcsolom","bekapcsolom","kikapcsolom"],"answer":"felkapcsolom"},{"lesson":4,"prompt":"Reggel ___ a kabátomat.","ru":"Утром я надеваю пальто.","options":["felveszem","kiveszem","beveszem"],"answer":"felveszem"},{"lesson":4,"prompt":"___ a pénzt a bankból.","ru":"Я снимаю деньги в банке.","options":["Kiveszem","Felveszem","Beveszem"],"answer":"Kiveszem"},{"lesson":4,"prompt":"___ a tejet a hűtőből.","ru":"Я достаю молоко из холодильника.","options":["Kiveszem","Felveszem","Beveszem"],"answer":"Kiveszem"},{"lesson":4,"prompt":"___ a könyvet a polcra.","ru":"Я кладу книгу на полку.","options":["Felteszem","Felveszem","Kiteszem"],"answer":"Felteszem"},{"lesson":4,"prompt":"___ a tejet a hűtőbe.","ru":"Я кладу молоко в холодильник.","options":["Beteszem","Felteszem","Felveszem"],"answer":"Beteszem"},{"lesson":4,"prompt":"A futár ___ a csomagot az emeletre.","ru":"Курьер поднимает посылку наверх.","options":["felhozza","kiviszi","kihozza"],"answer":"felhozza"},{"lesson":4,"prompt":"Kérlek, ___ a széket a kertből!","ru":"Пожалуйста, принеси стул из сада!","options":["hozd be","vidd ki"],"answer":"hozd be"},{"lesson":4,"prompt":"Kérlek, ___ a dobozt a lakásba!","ru":"Пожалуйста, занеси коробку в квартиру!","options":["hozd be","hozd ki","vidd ki"],"answer":"hozd be"},{"lesson":4,"prompt":"A pincér ___ az ételt az emeletre.","ru":"Официант относит еду наверх.","options":["felviszi","kiviszi","beviszi"],"answer":"felviszi"},{"lesson":4,"prompt":"___ a szemetet?","ru":"Вынесешь мусор?","options":["Kiviszed","Beviszed","Behozod"],"answer":"Kiviszed"},{"lesson":4,"prompt":"___ a táskát a szobába?","ru":"Отнесёшь сумку в комнату?","options":["Beviszed","Kiviszed","Felviszed"],"answer":"Beviszed"},{"lesson":4,"prompt":"A vendégek ___ hozzánk egy kávéra.","ru":"Гости заходят к нам на кофе.","options":["bejönnek","kimennek","feljönnek"],"answer":"bejönnek"},{"lesson":4,"prompt":"Péter ___ a házból.","ru":"Петер выходит из дома.","options":["kijön","bejön","bemegy"],"answer":"kijön"},{"lesson":4,"prompt":"Anna ___ a szobába.","ru":"Анна входит в комнату.","options":["bejön","kijön","feljön"],"answer":"bejön"},{"lesson":4,"prompt":"Lifttel ___ a harmadik emeletre.","ru":"Я поднимаюсь на лифте на третий этаж.","options":["felmegyek","kimegyek","bemegyek"],"answer":"felmegyek"},{"lesson":4,"prompt":"Munka után ___ az irodából.","ru":"После работы я выхожу из офиса.","options":["kimegyek","bemegyek","bejövök"],"answer":"kimegyek"},{"lesson":4,"prompt":"A gyerek ___ a medencébe.","ru":"Ребёнок прыгает в бассейн.","options":["beugrik","kiugrik","felugrik"],"answer":"beugrik"},{"lesson":4,"prompt":"A szakács ___ a levest a tányérokba.","ru":"Повар разливает суп по тарелкам.","options":["kiönti","beönti","felönti"],"answer":"kiönti"},{"lesson":4,"prompt":"A diák gyorsan ___ a térképet a falra.","ru":"Студент быстро вешает карту на стену.","options":["felrakja","berakja","kirakja"],"answer":"felrakja"},{"lesson":4,"prompt":"Eső előtt ___ a ruhákat az erkélyről.","ru":"Перед дождём мы заносим одежду с балкона.","options":["behozzuk","kihozzuk","felhozzuk"],"answer":"behozzuk"},{"lesson":4,"prompt":"Reggel anya ___ a gyerekeket.","ru":"Утром мама будит детей.","options":["felébreszti","beébreszti","kiébreszti"],"answer":"felébreszti"},{"lesson":4,"prompt":"A turista ___ a múzeumba.","ru":"Турист заходит в музей.","options":["bemegy","kimegy","felmegy"],"answer":"bemegy"},{"lesson":4,"prompt":"A fiú ___ a képet az újságból.","ru":"Парень вырезает картинку из газеты.","options":["kivágja","bevágja","felvágja"],"answer":"kivágja"},{"lesson":4,"prompt":"Ebéd után ___ a konyhában a padlót.","ru":"После обеда я вымою пол на кухне.","options":["felmosom","bemosom","kimosom"],"answer":"felmosom"},{"lesson":5,"prompt":"Péter ___ment a szobába.","ru":"Петер вошёл в комнату.","options":["be","ki","fel","le"],"answer":"be"},{"lesson":5,"prompt":"A gyerekek ___mentek az udvarra.","ru":"Дети вышли во двор.","options":["be","ki","fel","le"],"answer":"ki"},{"lesson":5,"prompt":"Gyalog mentünk ___ a harmadik emeletre.","ru":"Мы поднялись на третий этаж пешком.","options":["be","ki","fel","le"],"answer":"fel"},{"lesson":5,"prompt":"Anna ___ment a pincébe.","ru":"Анна спустилась в подвал.","options":["be","ki","fel","le"],"answer":"le"},{"lesson":5,"prompt":"Mikor jössz ___ az irodába?","ru":"Когда ты зайдёшь в офис?","options":["be","ki","fel","le"],"answer":"be"},{"lesson":5,"prompt":"A vendégek ___jöttek az épületből.","ru":"Гости вышли из здания.","options":["be","ki","fel","le"],"answer":"ki"},{"lesson":5,"prompt":"Este ___jössz hozzánk a második emeletre?","ru":"Ты поднимешься к нам на второй этаж вечером?","options":["be","ki","fel","le"],"answer":"fel"},{"lesson":5,"prompt":"A szomszéd ___jött a lépcsőn.","ru":"Сосед спустился по лестнице.","options":["be","ki","fel","le"],"answer":"le"},{"lesson":5,"prompt":"A szerelő ___vitte a számítógépet az irodába.","ru":"Мастер занёс компьютер в кабинет.","options":["be","ki","fel","le"],"answer":"be"},{"lesson":5,"prompt":"Reggel visszük ___ a szemetet.","ru":"Утром мы вынесем мусор.","options":["be","ki","fel","le"],"answer":"ki"},{"lesson":5,"prompt":"A pincér ___vitte az ételt az emeletre.","ru":"Официант отнёс еду наверх.","options":["be","ki","fel","le"],"answer":"fel"},{"lesson":5,"prompt":"A munkások ___vitték a dobozokat a pincébe.","ru":"Рабочие отнесли коробки в подвал.","options":["be","ki","fel","le"],"answer":"le"},{"lesson":5,"prompt":"Márk ___hozta a csomagot a lakásba.","ru":"Марк внёс посылку в квартиру.","options":["be","ki","fel","le"],"answer":"be"},{"lesson":5,"prompt":"A pincér ___hozta a kávét a teraszra.","ru":"Официант вынес кофе на террасу.","options":["be","ki","fel","le"],"answer":"ki"},{"lesson":5,"prompt":"A kollégám ___hozta a dokumentumokat az emeletre.","ru":"Мой коллега принёс документы наверх.","options":["be","ki","fel","le"],"answer":"fel"},{"lesson":5,"prompt":"Péter ___hozta a bőröndöt a padlásról.","ru":"Петер принёс чемодан с чердака вниз.","options":["be","ki","fel","le"],"answer":"le"},{"lesson":5,"prompt":"___tettem a könyvet a táskába.","ru":"Я положил книгу в сумку.","options":["be","ki","fel","le"],"answer":"be"},{"lesson":5,"prompt":"A székeket ___tettük a teraszra.","ru":"Мы выставили стулья на террасу.","options":["be","ki","fel","le"],"answer":"ki"},{"lesson":5,"prompt":"Anna ___tette a vázát a polcra.","ru":"Анна поставила вазу на полку.","options":["be","ki","fel","le"],"answer":"fel"},{"lesson":5,"prompt":"Péter ___tette a telefonját az asztalra.","ru":"Петер положил телефон на стол.","options":["be","ki","fel","le"],"answer":"le"},{"lesson":5,"prompt":"Reggel ___vettem a gyógyszert.","ru":"Утром я принял лекарство.","options":["be","ki","fel","le"],"answer":"be"},{"lesson":5,"prompt":"___vettem a kulcsot a táskámból.","ru":"Я вынул ключ из сумки.","options":["be","ki","fel","le"],"answer":"ki"},{"lesson":5,"prompt":"A gyerek ___vette a kabátját.","ru":"Ребёнок надел пальто.","options":["be","ki","fel","le"],"answer":"fel"},{"lesson":5,"prompt":"Az előszobában ___vettem a cipőmet.","ru":"В прихожей я снял обувь.","options":["be","ki","fel","le"],"answer":"le"},{"lesson":5,"prompt":"___írtam a nevemet a rendszerbe.","ru":"Я внёс своё имя в систему.","options":["be","ki","fel","le"],"answer":"be"},{"lesson":5,"prompt":"Az alkalmazott ___írta a nyitvatartást az ajtóra.","ru":"Сотрудник вывесил часы работы на двери.","options":["be","ki","fel","le"],"answer":"ki"},{"lesson":5,"prompt":"___írtam a telefonszámát egy papírra.","ru":"Я записал его номер телефона на бумаге.","options":["be","ki","fel","le"],"answer":"fel"},{"lesson":5,"prompt":"A tanú részletesen ___írta az eseményt.","ru":"Свидетель подробно описал событие.","options":["be","ki","fel","le"],"answer":"le"},{"lesson":5,"prompt":"Reggel ___kapcsoltam a számítógépet.","ru":"Утром я включил компьютер.","options":["be","ki","fel","le"],"answer":"be"},{"lesson":5,"prompt":"Indulás előtt ___kapcsoltuk a televíziót.","ru":"Перед уходом мы выключили телевизор.","options":["be","ki","fel","le"],"answer":"ki"},{"lesson":5,"prompt":"Péter ___kapcsolta a villanyt a szobában.","ru":"Петер включил свет в комнате.","options":["be","ki","fel","le"],"answer":"fel"},{"lesson":5,"prompt":"Anna ___kapcsolta a lámpát, és lefeküdt.","ru":"Анна выключила лампу и легла спать.","options":["be","ki","fel","le"],"answer":"le"},{"lesson":5,"prompt":"___álltam a sorba a pénztárnál.","ru":"Я встал в очередь у кассы.","options":["be","ki","fel","le"],"answer":"be"},{"lesson":5,"prompt":"A vezető ___állt a kollégája mellett.","ru":"Руководитель выступил в защиту своего коллеги.","options":["be","ki","fel","le"],"answer":"ki"},{"lesson":5,"prompt":"A vendégek ___álltak a székükről.","ru":"Гости встали со своих стульев.","options":["be","ki","fel","le"],"answer":"fel"},{"lesson":5,"prompt":"A gép hirtelen ___állt.","ru":"Аппарат внезапно остановился.","options":["be","ki","fel","le"],"answer":"le"},{"lesson":5,"prompt":"Az utasok ___szálltak az autóba.","ru":"Пассажиры сели в автомобиль.","options":["be","ki","fel","le"],"answer":"be"},{"lesson":5,"prompt":"A szálloda előtt ___szálltunk a taxiból.","ru":"Мы вышли из такси перед гостиницей.","options":["be","ki","fel","le"],"answer":"ki"},{"lesson":5,"prompt":"A következő megállónál sokan ___szálltak a buszra.","ru":"На следующей остановке многие сели в автобус.","options":["be","ki","fel","le"],"answer":"fel"},{"lesson":5,"prompt":"Budapesten ___szálltunk a vonatról.","ru":"В Будапеште мы вышли из поезда.","options":["be","ki","fel","le"],"answer":"le"},{"lesson":6,"prompt":"___ a kertbe.","ru":"Я выхожу в сад.","options":["kimegyek","bemegyek"],"answer":"kimegyek"},{"lesson":6,"prompt":"___ a reggelimet.","ru":"Я съедаю свой завтрак.","options":["beeszem","megeszem"],"answer":"megeszem"},{"lesson":6,"prompt":"___ a lakásomat.","ru":"Я убираю свою квартиру.","options":["kitakarítom","megtakarítom"],"answer":"kitakarítom"},{"lesson":6,"prompt":"___ a hajamat.","ru":"Я мою волосы.","options":["kimosom","megmosom"],"answer":"megmosom"},{"lesson":6,"prompt":"___ a boltba.","ru":"Я схожу в магазин.","options":["elmegyek","felmegyek"],"answer":"elmegyek"},{"lesson":6,"prompt":"___ az e-mailt.","ru":"Я напишу письмо.","options":["kiírom","megírom"],"answer":"megírom"},{"lesson":6,"prompt":"___ a prezentációra.","ru":"Я готовлюсь к презентации.","options":["felkészülök","megkészülök"],"answer":"felkészülök"},{"lesson":6,"prompt":"___ ezt a dokumentumot.","ru":"Я найду этот документ.","options":["megkeresem","bekeresem"],"answer":"megkeresem"},{"lesson":6,"prompt":"___ Katinak, hogyan működik a kávéfőző.","ru":"Я покажу Кати, как работает кофеварка.","options":["felmutatom","megmutatom"],"answer":"megmutatom"},{"lesson":6,"prompt":"___ a konyhában.","ru":"Я мою посуду на кухне.","options":["elmosogatok","kimosogatok"],"answer":"elmosogatok"},{"lesson":6,"prompt":"___ az e-mailjeimet.","ru":"Я прочитаю свои письма.","options":["megolvasom","elolvasom"],"answer":"elolvasom"},{"lesson":6,"prompt":"___ az új szavakat.","ru":"Я выучу новые слова.","options":["megtanulom","feltanulom"],"answer":"megtanulom"},{"lesson":6,"prompt":"___ telefonon ma este.","ru":"Я позвоню тебе сегодня вечером.","options":["meghívlak","felhívlak"],"answer":"felhívlak"},{"lesson":6,"prompt":"___ a pénztárcámat.","ru":"Я найду свой кошелёк.","options":["megkeresem","elkeresem"],"answer":"megkeresem"},{"lesson":6,"prompt":"___ egy filmet a Netflixen.","ru":"Я посмотрю фильм на Netflix.","options":["megnézek","felnézek"],"answer":"megnézek"},{"lesson":6,"prompt":"Zsuzsi ___mosta a tányérokat.","ru":"Жужи вымыла тарелки.","options":["el","ki","fel","le","össze","be","meg","vissza"],"answer":"el"},{"lesson":6,"prompt":"A hetesek ___mosták a táblát.","ru":"Дежурные вытерли доску.","options":["le","ki","el","fel","össze","be","meg","vissza"],"answer":"le"},{"lesson":6,"prompt":"A takarító néni ___mosta a termet.","ru":"Уборщица вымыла пол в зале.","options":["fel","ki","el","le","össze","be","meg","vissza"],"answer":"fel"},{"lesson":6,"prompt":"Anyu ___mosta a szennyes ruhákat.","ru":"Мама выстирала грязную одежду.","options":["ki","el","fel","le","össze","be","meg","vissza"],"answer":"ki"},{"lesson":6,"prompt":"Pista ___mosta a színes ruhát a fehérrel.","ru":"Пишта постирал цветное вместе с белым.","options":["össze","ki","el","fel","le","be","meg","vissza"],"answer":"össze"},{"lesson":6,"prompt":"Étkezés előtt mindig ___mosom a kezem.","ru":"Перед едой я всегда мою руки.","options":["meg","ki","el","fel","le","össze","be","vissza"],"answer":"meg"},{"lesson":6,"prompt":"Petra ___számolt az élményeiről.","ru":"Петра рассказала о своих впечатлениях.","options":["be","ki","el","fel","le","össze","meg","vissza"],"answer":"be"},{"lesson":6,"prompt":"A húgom már ___számol százig.","ru":"Моя сестрёнка уже считает до ста.","options":["el","ki","fel","le","össze","be","meg","vissza"],"answer":"el"},{"lesson":6,"prompt":"Ezt a vállalatot ___számolták.","ru":"Это предприятие ликвидировали.","options":["fel","ki","el","le","össze","be","meg","vissza"],"answer":"fel"}]}</script>
+<script>
+(() => {
+  const course = JSON.parse(document.getElementById('course-data').textContent);
+  const app = document.getElementById('app');
+
+  // Направление приставки — тот самый пространственный образ из курса.
+  const GLYPHS = { top100: '★', be: '↘', ki: '↗', fel: '↑', le: '↓', el: '→' };
+  const MODES = [
+    { id: 'cardsHuRu', t: 'Карточки: венгерский → русский', s: 'Видишь глагол, вспоминаешь значение', verbs: true },
+    { id: 'cardsRuHu', t: 'Карточки: русский → венгерский', s: 'Видишь перевод, вспоминаешь глагол', verbs: true },
+    { id: 'choiceRu', t: 'Тест: выбери перевод', s: '4 варианта перевода', verbs: true },
+    { id: 'choiceHu', t: 'Тест: выбери венгерский глагол', s: '4 похожих глагола, самый трудный', verbs: true },
+    { id: 'prefixes', t: 'Приставки в предложениях', s: 'be- / ki- / fel- / le- / el- в контексте', verbs: false },
+    { id: 'sentences', t: 'Фразы из курса', s: 'Переведи фразу на венгерский', verbs: false },
+  ];
+  const INTERVALS = [0, 1, 2, 4, 8, 16, 32];
+  const LEARNED_BOX = 3;
+  const DAY = 86400000;
+
+  // ---------- storage (per viewer) ----------
+  const store = {
+    get(key, fallback) {
+      try { const v = localStorage.getItem('hu:' + key); return v === null ? fallback : JSON.parse(v); }
+      catch { return fallback; }
+    },
+    set(key, value) { try { localStorage.setItem('hu:' + key, JSON.stringify(value)); } catch { /* приватный режим */ } },
+  };
+  let progress = store.get('progress', {});
+  let selected = new Set(store.get('groups', ['top100']));
+  let sessionSize = store.get('size', 15);
+
+  const state = id => progress[id] || { box: 0, due: 0, correct: 0, wrong: 0 };
+  const isNew = id => { const s = state(id); return s.correct + s.wrong === 0; };
+  const isDue = id => !isNew(id) && state(id).due <= Date.now();
+  const isLearned = id => state(id).box >= LEARNED_BOX;
+
+  function record(id, correct) {
+    const s = { ...state(id) };
+    if (correct) { s.correct++; s.box = Math.min(s.box + 1, INTERVALS.length - 1); }
+    else { s.wrong++; s.box = 0; }
+    s.due = Date.now() + INTERVALS[s.box] * DAY;
+    progress = { ...progress, [id]: s };
+    store.set('progress', progress);
+  }
+
+  // Просроченные (слабые раньше) → новые по порядку курса → остальные по сроку.
+  function sessionOrder(items, idOf) {
+    const due = items.filter(x => isDue(idOf(x))).sort((a, b) => state(idOf(a)).box - state(idOf(b)).box);
+    const fresh = items.filter(x => isNew(idOf(x)));
+    const rest = items.filter(x => !isNew(idOf(x)) && !isDue(idOf(x))).sort((a, b) => state(idOf(a)).due - state(idOf(b)).due);
+    return [...due, ...fresh, ...rest].slice(0, sessionSize);
+  }
+
+  const verbId = v => 'verb:' + v.hu;
+  const sentId = s => 'sent:' + s.hu;
+  const quizId = q => 'quiz:' + q.prompt + '|' + q.answer;
+  const verbsIn = ids => course.verbs.filter(v => ids.has(v.group));
+  const shuffle = a => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
+  const solved = q => {
+    const s = q.prompt.split('___').join(q.answer).replace(' (я)', '');
+    return q.prompt.startsWith('___') ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  };
+
+  // ---------- speech ----------
+  let huVoice = null;
+  function pickVoice() {
+    if (!('speechSynthesis' in window)) return;
+    const voices = speechSynthesis.getVoices();
+    huVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('hu')) || null;
+  }
+  if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+  function speak(text) {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'hu-HU';
+      if (huVoice) u.voice = huVoice;
+      u.rate = 0.85;
+      speechSynthesis.speak(u);
+    } catch { /* озвучка недоступна */ }
+  }
+
+  // ---------- tiny DOM helper ----------
+  function h(tag, attrs = {}, ...kids) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v == null || v === false) continue;
+      if (k === 'class') el.className = v;
+      else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? '' : v);
+    }
+    for (const kid of kids.flat()) if (kid != null && kid !== false) el.append(kid.nodeType ? kid : String(kid));
+    return el;
+  }
+  const speakBtn = text => h('button', { class: 'speak', type: 'button', onclick: () => speak(text), 'aria-label': 'Прослушать: ' + text }, '🔊 Прослушать');
+  const render = (...nodes) => { app.replaceChildren(...nodes); window.scrollTo(0, 0); };
+
+  // ---------- home ----------
+  function home() {
+    const allIds = course.verbs.map(verbId);
+    const learned = allIds.filter(isLearned).length;
+    const due = allIds.filter(isDue).length;
+    const chosen = verbsIn(selected);
+
+    const groups = course.groups.map(g => {
+      const ids = course.verbs.filter(v => v.group === g.id).map(verbId);
+      const l = ids.filter(isLearned).length;
+      return h('button', {
+        class: 'group', type: 'button', 'aria-pressed': String(selected.has(g.id)),
+        onclick: () => { selected.has(g.id) ? selected.delete(g.id) : selected.add(g.id); store.set('groups', [...selected]); home(); },
+      },
+        h('span', { class: 'glyph', 'aria-hidden': 'true' }, GLYPHS[g.id] || '•'),
+        h('span', { class: 'name' }, g.title),
+        h('span', { class: 'meta' }, `${g.subtitle} · ${l}/${ids.length}`),
+        h('span', { class: 'bar' }, h('i', { style: `width:${ids.length ? l / ids.length * 100 : 0}%` })),
+      );
+    });
+
+    const modes = MODES.map((m, i) => h('button', {
+      class: 'mode' + (i === 0 ? ' primary' : ''), type: 'button',
+      disabled: m.verbs && chosen.length === 0, onclick: () => start(m.id),
+    }, h('span', {}, h('div', { class: 't' }, m.t), h('div', { class: 's' }, m.s)), h('span', { class: 'go', 'aria-hidden': 'true' }, '→')));
+
+    const sizes = h('span', { class: 'seg', role: 'group', 'aria-label': 'Карточек за сессию' },
+      [10, 15, 20, 30].map(n => h('button', { type: 'button', 'aria-pressed': String(sessionSize === n), onclick: () => { sessionSize = n; store.set('size', n); home(); } }, n)));
+
+    let confirming = false;
+    const resetBox = h('div', { class: 'confirm' });
+    const drawReset = () => resetBox.replaceChildren(...(confirming
+      ? [h('span', {}, 'Обнулить весь прогресс?'),
+         h('button', { class: 'danger', type: 'button', onclick: () => { progress = {}; store.set('progress', progress); home(); } }, 'Да, обнулить'),
+         h('button', { type: 'button', onclick: () => { confirming = false; drawReset(); } }, 'Отмена')]
+      : [h('button', { class: 'link', type: 'button', onclick: () => { confirming = true; drawReset(); } }, 'Сбросить прогресс')]));
+    drawReset();
+
+    render(
+      h('header', { class: 'top' },
+        h('div', { class: 'brand' }, h('h1', {}, 'Magyar igék'), h('p', {}, 'Тренажёр к курсу «Венгерские глаголы», вебинары 1–6')),
+        h('div', { class: 'stat' }, h('b', {}, learned), h('span', { class: 'muted' }, ` / ${allIds.length} выучено`),
+          due ? h('div', { class: 'small', style: 'color:var(--paprika)' }, `${due} ждут повторения`) : null)),
+      h('div', { class: 'bar', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': allIds.length, 'aria-valuenow': learned },
+        h('i', { style: `width:${learned / allIds.length * 100}%` })),
+      h('section', { style: 'display:grid;gap:10px' },
+        h('div', { class: 'label' }, `Тренировка · выбрано глаголов: ${chosen.length}`),
+        h('div', { class: 'modes' }, modes)),
+      h('section', { style: 'display:grid;gap:10px' },
+        h('div', { class: 'label' }, 'Какие глаголы учим'),
+        h('div', { class: 'groups' }, groups),
+        h('div', { class: 'row-links' },
+          h('span', { class: 'small muted' }, 'Списки:'),
+          course.groups.map(g => h('button', { class: 'link', type: 'button', onclick: () => list(g) }, g.title)))),
+      h('section', { class: 'settings' }, h('span', {}, 'Карточек за сессию'), sizes),
+      resetBox,
+      h('p', { class: 'note' }, 'Прогресс хранится в этом браузере. Голос — венгерский из вашего телефона или компьютера.'),
+    );
+  }
+
+  // ---------- sessions ----------
+  function start(mode) {
+    if (mode === 'cardsHuRu' || mode === 'cardsRuHu') {
+      const huFirst = mode === 'cardsHuRu';
+      const cards = sessionOrder(verbsIn(selected), verbId).map(v => ({
+        id: verbId(v), front: huFirst ? v.hu : v.ru, back: huFirst ? v.ru : v.hu, huFront: huFirst, exHu: v.exHu, exRu: v.exRu,
+      }));
+      return flashcards(MODES.find(m => m.id === mode).t, cards);
+    }
+    if (mode === 'sentences') {
+      const cards = sessionOrder(course.sentences, sentId).map(s => ({ id: sentId(s), front: s.ru, back: s.hu, huFront: false }));
+      return flashcards('Фразы из курса', cards);
+    }
+    if (mode === 'choiceRu' || mode === 'choiceHu') {
+      const huToRu = mode === 'choiceRu';
+      const show = v => huToRu ? v.ru : v.hu;
+      const qs = sessionOrder(verbsIn(selected), verbId).map(v => {
+        const pool = [...shuffle(course.verbs.filter(o => o.group === v.group && o.hu !== v.hu)), ...shuffle(course.verbs.filter(o => o.group !== v.group))];
+        const wrong = [];
+        for (const o of pool) { const t = show(o); if (t !== show(v) && !wrong.includes(t)) wrong.push(t); if (wrong.length === 3) break; }
+        return {
+          id: verbId(v), prompt: huToRu ? v.hu : v.ru, promptHu: huToRu, optionsHu: !huToRu, hint: null,
+          options: shuffle([show(v), ...wrong]), answer: show(v),
+          solHu: v.exHu || v.hu, solRu: v.exHu ? v.exRu : v.ru, review: `${v.hu} — ${v.ru}`,
+        };
+      });
+      return choice(MODES.find(m => m.id === mode).t, qs);
+    }
+    if (mode === 'prefixes') {
+      const qs = sessionOrder(course.quiz, quizId).map(q => ({
+        id: quizId(q), prompt: q.prompt, promptHu: true, optionsHu: true, hint: q.ru || null,
+        options: shuffle([q.answer, ...shuffle(q.options.filter(o => o !== q.answer)).slice(0, 3)]), answer: q.answer,
+        solHu: solved(q), solRu: q.ru || null, review: solved(q) + (q.ru ? ' — ' + q.ru : ''),
+      }));
+      return choice('Приставки в предложениях', qs);
+    }
+  }
+
+  function sessionHead(title, i, total) {
+    return [
+      h('div', { class: 'session-head' },
+        h('button', { class: 'back', type: 'button', onclick: home }, '← Назад'),
+        h('strong', { style: 'min-width:0' }, title),
+        h('span', { class: 'count' }, `${Math.min(i + 1, total)} из ${total}`)),
+      h('div', { class: 'bar' }, h('i', { style: `width:${total ? i / total * 100 : 0}%` })),
+    ];
+  }
+
+  function emptySession(title) {
+    render(...sessionHead(title, 0, 0), h('div', { class: 'card' }, h('p', {}, 'Нет карточек. Отметь хотя бы одну группу глаголов.')));
+  }
+
+  function summary(correct, total, mistakes) {
+    render(h('div', { class: 'summary' },
+      h('div', { class: 'label' }, 'Сессия завершена'),
+      h('div', { class: 'score' }, `${correct}/${total}`),
+      h('p', { class: 'muted', style: 'margin:0' }, 'верно с первого раза'),
+      mistakes.length ? h('div', { class: 'review' }, h('strong', {}, 'Повторить'), h('ul', {}, mistakes.map(m => h('li', {}, m)))) : h('p', {}, 'Ни одной ошибки. Szép munka!'),
+      h('div', { class: 'actions', style: 'width:100%' }, h('button', { class: 'btn main', type: 'button', onclick: home }, 'Готово'))));
+  }
+
+  function flashcards(title, cards) {
+    if (!cards.length) return emptySession(title);
+    const queue = [...cards];
+    const requeued = new Set();
+    const missed = new Map();
+    let i = 0, firstTry = 0;
+
+    function draw(revealed) {
+      if (i >= queue.length) return summary(firstTry, cards.length, [...missed.values()]);
+      const c = queue[i];
+      const huText = c.huFront ? c.front : c.back;
+      const body = [h('div', { class: 'front ' + (c.huFront ? 'hu' : 'ru') }, c.front)];
+      if (c.huFront) body.push(speakBtn(c.front));
+      if (revealed) {
+        body.push(h('hr'), h('div', { class: 'back ' + (c.huFront ? 'ru' : 'hu') }, c.back));
+        if (!c.huFront) body.push(speakBtn(c.back));
+        if (c.exHu) body.push(h('div', { class: 'example' },
+          h('button', { class: 'link hu', type: 'button', style: 'font-size:18px;font-weight:400', onclick: () => speak(c.exHu) }, '🔊 ' + c.exHu),
+          c.exRu ? h('span', { class: 'muted small' }, c.exRu) : null));
+      }
+      const answer = ok => {
+        record(c.id, ok);
+        if (ok) { if (!requeued.has(c.id)) firstTry++; }
+        else {
+          missed.set(c.id, `${huText} — ${c.huFront ? c.back : c.front}`);
+          if (!requeued.has(c.id)) { requeued.add(c.id); queue.push(c); }
+        }
+        i++; draw(false);
+      };
+      render(...sessionHead(title, i, queue.length),
+        h('div', { class: 'card' }, body),
+        revealed
+          ? h('div', { class: 'actions' },
+              h('button', { class: 'btn no', type: 'button', onclick: () => answer(false) }, '✕ Не помню'),
+              h('button', { class: 'btn yes', type: 'button', onclick: () => answer(true) }, '✓ Помню'))
+          : h('div', { class: 'actions' }, h('button', { class: 'btn main', type: 'button', onclick: () => { draw(true); if (!c.huFront) speak(c.back); } }, 'Показать ответ')));
+      if (!revealed && c.huFront) speak(c.front);
+    }
+    draw(false);
+  }
+
+  function choice(title, qs) {
+    if (!qs.length) return emptySession(title);
+    let i = 0, right = 0;
+    const mistakes = [];
+
+    function promptNode(q) {
+      if (!q.prompt.includes('___')) return h('div', { class: 'front ' + (q.promptHu ? 'hu' : 'ru') }, q.prompt);
+      const parts = q.prompt.split('___');
+      return h('div', { class: 'front hu prompt' }, parts[0], h('span', { class: 'gap', 'aria-label': 'пропуск' }, ' '), parts.slice(1).join('___'));
+    }
+
+    function draw(picked) {
+      if (i >= qs.length) return summary(right, qs.length, mistakes);
+      const q = qs[i];
+      const opts = q.options.map(o => {
+        let cls = 'opt' + (q.optionsHu ? ' hu' : '');
+        if (picked != null) { if (o === q.answer) cls += ' right'; else if (o === picked) cls += ' wrong'; }
+        return h('button', { class: cls, type: 'button', disabled: picked != null, onclick: () => pick(o) },
+          h('span', {}, o), picked != null && o === q.answer ? '✓' : picked === o ? '✕' : '');
+      });
+      const card = [promptNode(q)];
+      if (q.hint) card.push(h('div', { class: 'muted' }, q.hint));
+      if (q.promptHu && !q.prompt.includes('___')) card.push(speakBtn(q.prompt));
+      render(...sessionHead(title, i, qs.length),
+        h('div', { class: 'card', style: 'min-height:180px' }, card),
+        h('div', { class: 'options' }, opts),
+        picked != null ? h('div', { class: 'solution' },
+          h('button', { class: 'link hu', type: 'button', style: 'font-size:19px;font-weight:400;text-align:left', onclick: () => speak(q.solHu) }, '🔊 ' + q.solHu),
+          q.solRu ? h('span', { class: 'muted small' }, q.solRu) : null) : null,
+        picked != null ? h('div', { class: 'actions' }, h('button', { class: 'btn main', type: 'button', onclick: () => { i++; draw(null); } }, i + 1 < qs.length ? 'Дальше' : 'Итоги')) : null);
+      if (picked == null && q.promptHu && !q.prompt.includes('___')) speak(q.prompt);
+    }
+
+    function pick(o) {
+      const q = qs[i];
+      const ok = o === q.answer;
+      record(q.id, ok);
+      if (ok) right++; else mistakes.push(q.review);
+      speak(q.solHu);
+      draw(o);
+    }
+    draw(null);
+  }
+
+  // ---------- verb list ----------
+  function list(group) {
+    const verbs = course.verbs.filter(v => v.group === group.id);
+    const ul = h('ul', { class: 'verbs' });
+    const fill = q => {
+      const query = q.trim().toLowerCase();
+      ul.replaceChildren(...verbs.filter(v => !query || v.hu.toLowerCase().includes(query) || v.ru.toLowerCase().includes(query)).map(v => {
+        const id = verbId(v);
+        const dot = isLearned(id) ? 'learned' : isNew(id) ? '' : 'seen';
+        return h('li', { onclick: () => speak(v.hu), tabindex: 0, onkeydown: e => { if (e.key === 'Enter') speak(v.hu); } },
+          h('span', { class: 'dot ' + dot, 'aria-hidden': 'true' }),
+          h('span', {}, h('span', { class: 'w' }, v.hu), h('span', { class: 'muted' }, ' — ' + v.ru)),
+          v.exHu ? h('span', { class: 'ex' }, h('i', {}, v.exHu), v.exRu ? ' · ' + v.exRu : '') : null);
+      }));
+    };
+    const input = h('input', { class: 'search', id: 'verb-search', type: 'search', placeholder: 'Поиск по глаголам', oninput: e => fill(e.target.value) });
+    fill('');
+    render(
+      h('div', { class: 'session-head' },
+        h('button', { class: 'back', type: 'button', onclick: home }, '← Назад'),
+        h('strong', {}, `${group.title} · ${group.subtitle}`),
+        h('span', { class: 'count' }, verbs.length)),
+      input, ul,
+      h('p', { class: 'note' }, 'Нажми на глагол, чтобы услышать. Зелёная точка — выучен, оранжевая — в процессе.'));
+  }
+
+  home();
+})();
+</script>
+</body>
+</html>
